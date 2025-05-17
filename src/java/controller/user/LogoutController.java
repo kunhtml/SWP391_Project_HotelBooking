@@ -26,11 +26,8 @@ public class LogoutController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Log out the user
-        AuthUtil.logout(request);
-        
-        // Clear remember-me cookie
-        AuthUtil.clearRememberMeCookie(request, response);
-        
+        AuthUtil.logout(request, response);
+
         // Redirect to home page
         response.sendRedirect("home");
     }
