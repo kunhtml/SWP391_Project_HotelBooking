@@ -25,7 +25,7 @@
                         <a class="nav-link ${pageContext.request.servletPath == '/WEB-INF/views/about.jsp' ? 'active' : ''}" href="about">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
+                        <a class="nav-link ${pageContext.request.servletPath == '/WEB-INF/views/contact.jsp' ? 'active' : ''}" href="contact">Contact</a>
                     </li>
                 </ul>
                 <div class="d-flex">
