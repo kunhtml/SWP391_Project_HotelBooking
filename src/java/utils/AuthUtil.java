@@ -8,6 +8,7 @@ import model.User;
 
 /**
  * Utility class for authentication-related operations
+ * Simple implementation without complex password handling
  */
 public class AuthUtil {
     private static final String USER_SESSION_KEY = "user";
@@ -48,38 +49,46 @@ public class AuthUtil {
     }
 
     /**
-     * Store user in session (alias for setLoggedInUser)
-     * @param request HTTP request
-     * @param user User to store in session
-     */
-    public static void storeUserInSession(HttpServletRequest request, User user) {
-        setLoggedInUser(request, user);
-    }
-
-    /**
      * Log out the current user
      * @param request HTTP request
+     * @param response HTTP response
      */
-    public static void logout(HttpServletRequest request) {
+    public static void logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.invalidate();
         }
+        clearRememberMeCookie(request, response);
     }
 
     /**
      * Set a remember-me cookie
      * @param response HTTP response
      * @param username Username to remember
-     * @param token Token for authentication
      */
-    public static void setRememberMeCookie(HttpServletResponse response, String username, String token) {
-        String cookieValue = username + ":" + token;
-        Cookie cookie = new Cookie(REMEMBER_ME_COOKIE, cookieValue);
+    public static void setRememberMeCookie(HttpServletResponse response, String username) {
+        Cookie cookie = new Cookie(REMEMBER_ME_COOKIE, username);
         cookie.setMaxAge(COOKIE_MAX_AGE);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         response.addCookie(cookie);
+    }
+
+    /**
+     * Get the remembered username from cookie
+     * @param request HTTP request
+     * @return Username if found, null otherwise
+     */
+    public static String getRememberedUsername(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (REMEMBER_ME_COOKIE.equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -100,16 +109,5 @@ public class AuthUtil {
                 }
             }
         }
-    }
-
-    /**
-     * Check if user has a specific role
-     * @param request HTTP request
-     * @param role Role to check
-     * @return true if user has the role, false otherwise
-     */
-    public static boolean hasRole(HttpServletRequest request, String role) {
-        User user = getLoggedInUser(request);
-        return user != null && role.equals(user.getRole());
     }
 }
