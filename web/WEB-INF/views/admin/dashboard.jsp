@@ -155,6 +155,22 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                 </a>
               </li>
               <li class="nav-item">
+                <a class="nav-link ${activeTab == 'rooms' ? 'active' : ''}"
+                   href="#rooms"
+                   data-bs-toggle="tab"
+                   onclick="setActiveTab('rooms')">
+                  <i class="fas fa-bed"></i> Rooms
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link ${activeTab == 'revenue' ? 'active' : ''}"
+                   href="#revenue"
+                   data-bs-toggle="tab"
+                   onclick="setActiveTab('revenue')">
+                  <i class="fas fa-chart-line"></i> Revenue
+                </a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link ${activeTab == 'settings' ? 'active' : ''}"
                    href="#settings"
                    data-bs-toggle="tab"
@@ -441,8 +457,8 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                           placeholder="Search users..."
                           value="${param.search}"
                         />
-                        <button class="btn btn-outline-secondary" type="submit">
-                          <i class="fas fa-search"></i>
+                        <button class="btn btn-primary" type="submit">
+                          <i class="fas fa-search"></i> Search
                         </button>
                       </div>
                     </div>
@@ -459,11 +475,8 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                           <option value="1" ${param.status == '1' ? 'selected' : ''}>Active</option>
                           <option value="0" ${param.status == '0' ? 'selected' : ''}>Inactive</option>
                         </select>
-                        <button type="submit" class="btn btn-primary ms-2">
-                          <i class="fas fa-filter"></i> Filter
-                        </button>
-                        <button type="button" class="btn btn-secondary ms-2" id="resetFiltersBtn">
-                          <i class="fas fa-sync"></i> Reset
+                        <button type="button" class="btn btn-secondary" id="resetFiltersBtn">
+                          <i class="fas fa-sync"></i> Reset Filters
                         </button>
                       </div>
                     </div>
@@ -859,6 +872,237 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 
 
+            <!-- Rooms Tab -->
+            <div class="tab-pane fade ${activeTab == 'rooms' ? 'show active' : ''}" id="rooms">
+              <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+              >
+                <h1 class="h2">Room Management</h1>
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addRoomModal"
+                >
+                  <i class="fas fa-plus me-1"></i> Add New Room
+                </button>
+              </div>
+
+              <!-- Search and Filter -->
+              <div class="row mb-3">
+                <form id="roomSearchForm" action="${pageContext.request.contextPath}/admin/dashboard" method="get">
+                  <input type="hidden" name="tab" value="rooms" id="roomTabInput">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="input-group">
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="roomSearch"
+                          id="roomSearchInput"
+                          placeholder="Search rooms..."
+                          value="${param.roomSearch}"
+                        />
+                        <button class="btn btn-primary" type="submit">
+                          <i class="fas fa-search"></i> Search
+                        </button>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="d-flex justify-content-end">
+                        <select class="form-select me-2" style="width: auto" name="roomType" id="roomTypeFilter">
+                          <option value="">All Room Types</option>
+                          <option value="Standard">Standard</option>
+                          <option value="Deluxe">Deluxe</option>
+                          <option value="Suite">Suite</option>
+                        </select>
+                        <select class="form-select me-2" style="width: auto" name="roomStatus" id="roomStatusFilter">
+                          <option value="">All Status</option>
+                          <option value="Available">Available</option>
+                          <option value="Occupied">Occupied</option>
+                          <option value="Maintenance">Maintenance</option>
+                        </select>
+                        <button type="button" class="btn btn-secondary" id="resetRoomFiltersBtn">
+                          <i class="fas fa-sync"></i> Reset Filters
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Rooms Table -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <i class="fas fa-bed me-1"></i>
+                  Rooms
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th>Room #</th>
+                          <th>Type</th>
+                          <th>Price</th>
+                          <th>Capacity</th>
+                          <th>Status</th>
+                          <th>Features</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colspan="7" class="text-center">Room management will be implemented later</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Add Room Modal Placeholder -->
+              <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="addRoomModalLabel">Add New Room</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p class="text-center">Room management functionality will be implemented later.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Revenue Tab -->
+            <div class="tab-pane fade ${activeTab == 'revenue' ? 'show active' : ''}" id="revenue">
+              <div
+                class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
+              >
+                <h1 class="h2">Revenue Management</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                  <div class="btn-group me-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Print</button>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                    <i class="fas fa-calendar me-1"></i> This Month
+                  </button>
+                </div>
+              </div>
+
+              <!-- Revenue Overview Cards -->
+              <div class="row">
+                <div class="col-xl-3 col-md-6 mb-4">
+                  <div class="card card-dashboard success shadow h-100">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="card-title">Total Revenue</div>
+                          <div class="card-value">$10,000</div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                  <div class="card card-dashboard primary shadow h-100">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="card-title">Bookings</div>
+                          <div class="card-value">150</div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                  <div class="card card-dashboard info shadow h-100">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="card-title">Occupancy Rate</div>
+                          <div class="card-value">75%</div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-bed fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-xl-3 col-md-6 mb-4">
+                  <div class="card card-dashboard warning shadow h-100">
+                    <div class="card-body">
+                      <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                          <div class="card-title">Avg. Daily Rate</div>
+                          <div class="card-value">$120</div>
+                        </div>
+                        <div class="col-auto">
+                          <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Revenue Chart Placeholder -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <i class="fas fa-chart-bar me-1"></i>
+                  Monthly Revenue
+                </div>
+                <div class="card-body">
+                  <div style="height: 300px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                    <p class="text-muted">Revenue chart will be implemented later</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Revenue by Room Type -->
+              <div class="card mb-4">
+                <div class="card-header">
+                  <i class="fas fa-chart-pie me-1"></i>
+                  Revenue by Room Type
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                      <thead>
+                        <tr>
+                          <th>Room Type</th>
+                          <th>Bookings</th>
+                          <th>Revenue</th>
+                          <th>Avg. Price</th>
+                          <th>Occupancy Rate</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colspan="5" class="text-center">Revenue management will be implemented later</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Settings Tab -->
             <div class="tab-pane fade ${activeTab == 'settings' ? 'show active' : ''}" id="settings">
               <div
@@ -952,16 +1196,28 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
         // Handle filter changes
         const roleFilter = document.getElementById('roleFilter');
         const statusFilter = document.getElementById('statusFilter');
+        const searchInput = document.getElementById('searchInput');
 
         if (roleFilter && statusFilter) {
+          // Auto-submit when role filter changes
           roleFilter.addEventListener('change', function() {
-            if (this.value !== '') {
-              document.getElementById('userSearchForm').submit();
-            }
+            document.getElementById('userSearchForm').submit();
           });
 
+          // Auto-submit when status filter changes
           statusFilter.addEventListener('change', function() {
             document.getElementById('userSearchForm').submit();
+          });
+        }
+
+        // Add event listener for search input
+        if (searchInput) {
+          // Auto-submit when user presses Enter in search input
+          searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+              e.preventDefault(); // Prevent default form submission
+              document.getElementById('userSearchForm').submit();
+            }
           });
         }
 
@@ -987,7 +1243,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
           });
         }
 
-        // Handle reset button click
+        // Handle user reset button click
         const resetFiltersBtn = document.getElementById('resetFiltersBtn');
         if (resetFiltersBtn) {
           resetFiltersBtn.addEventListener('click', function() {
@@ -1019,6 +1275,41 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
             // Reload the page with the users tab active
             window.location.href = '${pageContext.request.contextPath}/admin/dashboard?tab=users';
+          });
+        }
+
+        // Handle room reset button click
+        const resetRoomFiltersBtn = document.getElementById('resetRoomFiltersBtn');
+        if (resetRoomFiltersBtn) {
+          resetRoomFiltersBtn.addEventListener('click', function() {
+            // Show the rooms tab
+            const roomsTab = document.querySelector('.nav-link[href="#rooms"]');
+            if (roomsTab) {
+              const tab = new bootstrap.Tab(roomsTab);
+              tab.show();
+              setActiveTab('rooms');
+            }
+
+            // Clear room search input
+            const roomSearchInput = document.getElementById('roomSearchInput');
+            if (roomSearchInput) {
+              roomSearchInput.value = '';
+            }
+
+            // Reset room type filter
+            const roomTypeFilter = document.getElementById('roomTypeFilter');
+            if (roomTypeFilter) {
+              roomTypeFilter.value = '';
+            }
+
+            // Reset room status filter
+            const roomStatusFilter = document.getElementById('roomStatusFilter');
+            if (roomStatusFilter) {
+              roomStatusFilter.value = '';
+            }
+
+            // Reload the page with the rooms tab active
+            window.location.href = '${pageContext.request.contextPath}/admin/dashboard?tab=rooms';
           });
         }
       });
