@@ -1,10 +1,10 @@
-# Hệ Thống Đặt Lịch Dịch Vụ
+# Hệ Thống Đặt Phòng Khách Sạn
 
-Một hệ thống đặt lịch dịch vụ toàn diện được xây dựng bằng Java Servlets, JSP và SQL Server, cho phép người dùng đặt lịch hẹn với các dịch vụ và nhân viên.
+Một hệ thống đặt phòng khách sạn toàn diện được xây dựng bằng Java Servlets, JSP và SQL Server, cho phép người dùng đặt phòng, quản lý đặt phòng và thanh toán hóa đơn.
 
 ## Tổng Quan
 
-Dự án này triển khai một nền tảng đặt lịch dịch vụ cho phép người dùng đăng ký tài khoản, đặt lịch hẹn với các dịch vụ và nhân viên, quản lý lịch hẹn cá nhân, và cung cấp các công cụ thống kê cho quản trị viên. Hệ thống tuân theo mô hình kiến trúc MVC để phân tách rõ ràng các thành phần và dễ bảo trì.
+Dự án này triển khai một nền tảng đặt phòng khách sạn cho phép người dùng đăng ký tài khoản, tìm kiếm và đặt phòng khách sạn, quản lý đặt phòng, thanh toán hóa đơn, và cung cấp các công cụ thống kê cho quản trị viên. Hệ thống tuân theo mô hình kiến trúc MVC để phân tách rõ ràng các thành phần và dễ bảo trì.
 
 ## Tính Năng Chính
 
@@ -38,82 +38,87 @@ Dự án này triển khai một nền tảng đặt lịch dịch vụ cho phé
   - Phân quyền (admin, khách đặt lịch, nhân viên)
   - Gán quyền và hiển thị danh sách người dùng
 
-### 2. Chức Năng Đặt Lịch & Quản Lý Lịch Cá Nhân (Sinh viên 2)
+### 2. Chức Năng Đặt Phòng & Quản Lý Đặt Phòng (Sinh viên 2)
 
-- **Tạo Lịch Mới**
+- **Tìm Kiếm Phòng**
 
-  - Đặt cuộc hẹn theo dịch vụ, giờ, nhân viên
-  - Thông tin bao gồm: Ngày, giờ, dịch vụ, người tiếp nhận, ghi chú
+  - Tìm kiếm phòng theo tiêu chí: Ngày check-in/check-out, loại phòng, số người
+  - Hiển thị danh sách phòng phù hợp với bộ lọc
 
-- **Danh Sách Lịch Đã Đặt**
+- **Đặt Phòng Mới**
 
-  - Hiển thị toàn bộ lịch đã đặt với thông tin: Ngày, giờ, dịch vụ, trạng thái
-  - Chức năng hủy lịch
+  - Chọn phòng và thời gian lưu trú
+  - Thông tin bao gồm: Ngày check-in, ngày check-out, loại phòng, số người, yêu cầu đặc biệt
 
-- **Hủy Lịch**
+- **Danh Sách Đặt Phòng**
 
-  - Xác nhận hủy lịch, cập nhật trạng thái
-  - Nhập lý do hủy
+  - Hiển thị toàn bộ đặt phòng với thông tin: Mã đặt phòng, ngày check-in/check-out, loại phòng, trạng thái
+  - Chức năng hủy đặt phòng
 
-- **Chi Tiết Lịch**
+- **Hủy Đặt Phòng**
 
-  - Hiển thị thông tin chi tiết: Ngày, giờ, dịch vụ, người thực hiện, trạng thái
+  - Xác nhận hủy đặt phòng, cập nhật trạng thái
+  - Nhập lý do hủy và chính sách hoàn tiền
 
-- **Lịch Sử Đặt Lịch**
-  - Xem toàn bộ lịch đã thực hiện
+- **Chi Tiết Đặt Phòng**
+
+  - Hiển thị thông tin chi tiết: Mã đặt phòng, thông tin khách hàng, thông tin phòng, thời gian lưu trú, trạng thái
+
+- **Lịch Sử Đặt Phòng**
+  - Xem toàn bộ lịch sử đặt phòng
   - Tìm kiếm và phân trang
 
-### 3. Quản Lý Dịch Vụ & Nhân Sự (Sinh viên 3)
+### 3. Thanh Toán Hóa Đơn & Quản Lý Giao Dịch (Sinh viên 3)
 
-- **Danh Sách Dịch Vụ**
+- **Danh Sách Hóa Đơn**
 
-  - Quản lý các dịch vụ có thể đặt lịch
-  - Thông tin: Tên, mô tả, giá, thời gian thực hiện, trạng thái
+  - Quản lý tất cả các hóa đơn trong hệ thống
+  - Thông tin: Mã hóa đơn, khách hàng, tổng tiền, trạng thái thanh toán, ngày tạo
 
-- **Thêm/Sửa Dịch Vụ**
+- **Chi Tiết Hóa Đơn**
 
-  - Tạo mới hoặc cập nhật dịch vụ
-  - Thông tin: Tên, mô tả, giá, hình ảnh, thời gian, trạng thái
+  - Hiển thị chi tiết hóa đơn
+  - Thông tin: Thông tin đặt phòng, danh sách dịch vụ, phí phát sinh, thuế, tổng tiền
 
-- **Danh Sách Nhân Viên**
+- **Thanh Toán Hóa Đơn**
 
-  - Quản lý người thực hiện dịch vụ (bác sĩ, tư vấn viên...)
-  - Thông tin: Tên, chuyên môn, email, số điện thoại, ảnh đại diện, trạng thái
+  - Xử lý thanh toán với nhiều phương thức (tiền mặt, thẻ tín dụng, chuyển khoản)
+  - Ghi nhận thông tin thanh toán và cập nhật trạng thái
 
-- **Thêm/Sửa Nhân Viên**
+- **Lịch Sử Giao Dịch**
 
-  - Nhập thông tin nhân viên mới
-  - Thông tin: Họ tên, chuyên môn, giờ làm, mô tả ngắn, trạng thái
+  - Xem lịch sử các giao dịch thanh toán
+  - Thông tin: Mã giao dịch, phương thức thanh toán, số tiền, ngày thanh toán, trạng thái
 
-- **Phân Ca Làm Việc**
-  - Gán khung giờ làm việc cho từng nhân viên
-  - Chọn người, chọn ngày, chọn giờ bắt đầu/kết thúc
+- **Xuất Hóa Đơn**
+  - Tạo và xuất hóa đơn dưới dạng PDF
+  - Tùy chọn gửi hóa đơn qua email cho khách hàng
 
 ### 4. Thống Kê & Báo Cáo (Sinh viên 4)
 
-- **Tổng Quan Đặt Lịch**
+- **Tổng Quan Đặt Phòng**
 
-  - Biểu đồ số lượng lịch theo ngày, trạng thái
-  - Hiển thị số lượt đặt, số lượt hủy
+  - Biểu đồ số lượng đặt phòng theo ngày, tháng, quý
+  - Hiển thị số lượt đặt phòng, số lượt hủy, tỷ lệ lấp đầy
 
-- **Thống Kê Theo Dịch Vụ**
+- **Thống Kê Theo Loại Phòng**
 
-  - Số lượt đặt theo từng loại dịch vụ
-  - Thông tin: Dịch vụ, số lượt, % tăng trưởng
+  - Phân tích doanh thu theo từng loại phòng
+  - Thông tin: Loại phòng, số lượt đặt, doanh thu, % tăng trưởng
 
-- **Thống Kê Theo Nhân Viên**
+- **Thống Kê Doanh Thu**
 
-  - Tần suất hoạt động của nhân viên
-  - Thông tin: Tên nhân viên, số lịch phục vụ, thời gian làm việc
+  - Biểu đồ doanh thu theo thời gian (ngày, tuần, tháng, năm)
+  - Phân tích doanh thu theo nguồn (đặt phòng, dịch vụ, phụ thu)
 
-- **Thống Kê Theo Người Dùng**
+- **Thống Kê Theo Khách Hàng**
 
-  - Top người dùng đặt nhiều, tỷ lệ hủy
-  - Thông tin: Tên, số lịch, tỷ lệ hủy
+  - Top khách hàng đặt phòng nhiều nhất
+  - Thông tin: Tên khách hàng, số lượt đặt, tổng chi tiêu, tỷ lệ hủy
 
 - **Xuất Báo Cáo Excel/PDF**
-  - Tùy chọn lọc theo ngày, dịch vụ, nhân sự
-  - Chức năng xuất file
+  - Tùy chọn lọc theo thời gian, loại phòng, nguồn doanh thu
+  - Chức năng xuất file và gửi email tự động
 
 ## Công Nghệ Sử Dụng
 
@@ -122,8 +127,10 @@ Dự án này triển khai một nền tảng đặt lịch dịch vụ cho phé
 - **Cơ Sở Dữ Liệu**: Microsoft SQL Server
 - **Máy Chủ**: Apache Tomcat 10.1.x
 - **Xác Thực**: Triển khai tùy chỉnh với mã hóa mật khẩu
+- **Thanh Toán**: Tích hợp cổng thanh toán (VNPay, Momo)
 - **Biểu Đồ**: Chart.js
 - **Xuất Báo Cáo**: Apache POI (Excel), iText (PDF)
+- **Gửi Email**: JavaMail API
 
 ## Cấu Trúc Dự Án
 
@@ -151,10 +158,12 @@ BookingSystem/
 Ứng dụng sử dụng các bảng chính sau:
 
 - **Users**: Lưu trữ thông tin tài khoản người dùng (id, họ tên, email, mật khẩu, số điện thoại, giới tính, ngày sinh, vai trò, trạng thái)
-- **Services**: Chứa thông tin về các dịch vụ (id, tên, mô tả, giá, thời gian thực hiện, hình ảnh, trạng thái)
-- **Staff**: Thông tin nhân viên (id, họ tên, chuyên môn, email, số điện thoại, ảnh đại diện, trạng thái)
-- **Schedules**: Lịch làm việc của nhân viên (id, nhân viên id, ngày, giờ bắt đầu, giờ kết thúc)
-- **Bookings**: Thông tin đặt lịch (id, người dùng id, dịch vụ id, nhân viên id, ngày, giờ, ghi chú, trạng thái, lý do hủy)
+- **Hotels**: Thông tin khách sạn (id, tên, địa chỉ, mô tả, số sao, tiện ích, hình ảnh)
+- **RoomTypes**: Loại phòng (id, tên loại, mô tả, giá, sức chứa, diện tích, hình ảnh)
+- **Rooms**: Thông tin phòng (id, số phòng, khách sạn id, loại phòng id, tầng, trạng thái)
+- **Bookings**: Thông tin đặt phòng (id, người dùng id, phòng id, ngày check-in, ngày check-out, số người, yêu cầu đặc biệt, trạng thái, lý do hủy)
+- **Invoices**: Hóa đơn thanh toán (id, đặt phòng id, tổng tiền, thuế, phí phát sinh, trạng thái thanh toán, ngày tạo)
+- **Payments**: Thông tin thanh toán (id, hóa đơn id, phương thức thanh toán, số tiền, ngày thanh toán, trạng thái, mã giao dịch)
 
 ## Hướng Dẫn Cài Đặt
 
@@ -186,6 +195,8 @@ BookingSystem/
 - Quản lý phiên cho người dùng đã xác thực
 - Kiểm soát truy cập dựa trên vai trò
 - Bảo vệ chống tấn công CSRF
+
+
 
 ## Người Đóng Góp
 
