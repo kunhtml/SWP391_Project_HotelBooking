@@ -138,20 +138,27 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
             <ul class="nav flex-column">
               <li class="nav-item">
                 <a
-                  class="nav-link active"
+                  class="nav-link ${activeTab == null || activeTab == 'dashboard' ? 'active' : ''}"
                   href="#dashboard"
                   data-bs-toggle="tab"
+                  onclick="setActiveTab('dashboard')"
                 >
                   <i class="fas fa-tachometer-alt"></i> Dashboard
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#users" data-bs-toggle="tab">
+                <a class="nav-link ${activeTab == 'users' ? 'active' : ''}"
+                   href="#users"
+                   data-bs-toggle="tab"
+                   onclick="setActiveTab('users')">
                   <i class="fas fa-users"></i> Users
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                <a class="nav-link ${activeTab == 'settings' ? 'active' : ''}"
+                   href="#settings"
+                   data-bs-toggle="tab"
+                   onclick="setActiveTab('settings')">
                   <i class="fas fa-cog"></i> Settings
                 </a>
               </li>
@@ -163,7 +170,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
           <div class="tab-content">
             <!-- Dashboard Tab -->
-            <div class="tab-pane fade show active" id="dashboard">
+            <div class="tab-pane fade ${activeTab == null || activeTab == 'dashboard' ? 'show active' : ''}" id="dashboard">
               <div
                 class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
               >
@@ -404,7 +411,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
             </div>
 
             <!-- Users Tab -->
-            <div class="tab-pane fade" id="users">
+            <div class="tab-pane fade ${activeTab == 'users' ? 'show active' : ''}" id="users">
               <div
                 class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
               >
@@ -421,33 +428,47 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
               <!-- Search and Filter -->
               <div class="row mb-3">
-                <div class="col-md-6">
-                  <div class="input-group">
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Search users..."
-                    />
-                    <button class="btn btn-outline-secondary" type="button">
-                      <i class="fas fa-search"></i>
-                    </button>
+                <form id="userSearchForm" action="${pageContext.request.contextPath}/admin/dashboard" method="get">
+                  <input type="hidden" name="tab" value="users" id="tabInput">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="input-group">
+                        <input
+                          type="text"
+                          class="form-control"
+                          name="search"
+                          id="searchInput"
+                          placeholder="Search users..."
+                          value="${param.search}"
+                        />
+                        <button class="btn btn-outline-secondary" type="submit">
+                          <i class="fas fa-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="d-flex justify-content-end">
+                        <select class="form-select me-2" style="width: auto" name="role" id="roleFilter">
+                          <option value="">All Roles</option>
+                          <option value="admin" ${param.role == 'admin' ? 'selected' : ''}>Admin</option>
+                          <option value="user" ${param.role == 'user' ? 'selected' : ''}>User</option>
+                          <option value="staff" ${param.role == 'staff' ? 'selected' : ''}>Staff</option>
+                        </select>
+                        <select class="form-select" style="width: auto" name="status" id="statusFilter">
+                          <option value="" ${param.status == '' || param.status == null ? 'selected' : ''}>All Status</option>
+                          <option value="1" ${param.status == '1' ? 'selected' : ''}>Active</option>
+                          <option value="0" ${param.status == '0' ? 'selected' : ''}>Inactive</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary ms-2">
+                          <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <button type="button" class="btn btn-secondary ms-2" id="resetFiltersBtn">
+                          <i class="fas fa-sync"></i> Reset
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="d-flex justify-content-end">
-                    <select class="form-select me-2" style="width: auto">
-                      <option value="">All Roles</option>
-                      <option value="admin">Admin</option>
-                      <option value="user">User</option>
-                      <option value="staff">Staff</option>
-                    </select>
-                    <select class="form-select" style="width: auto">
-                      <option value="1">Active</option>
-                      <option value="0">Inactive</option>
-                      <option value="">All Status</option>
-                    </select>
-                  </div>
-                </div>
+                </form>
               </div>
 
               <!-- Users Table -->
@@ -526,43 +547,68 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                  <div class="mb-3">
-                                    <strong>ID:</strong> ${userItem.userID}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Name:</strong> ${userItem.fullName}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Username:</strong> ${userItem.username}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Email:</strong> ${userItem.email}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Role:</strong> ${userItem.role}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Gender:</strong> ${userItem.gender}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Phone:</strong> ${userItem.phoneNumber}
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Status:</strong>
-                                    <c:choose>
-                                      <c:when test="${userItem.isActive}">
-                                        <span class="badge bg-success">Active</span>
-                                      </c:when>
-                                      <c:otherwise>
-                                        <span class="badge bg-secondary">Inactive</span>
-                                      </c:otherwise>
-                                    </c:choose>
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Created Date:</strong> <fmt:formatDate value="${userItem.createdDate}" pattern="yyyy-MM-dd HH:mm:ss" />
-                                  </div>
-                                  <div class="mb-3">
-                                    <strong>Last Login:</strong> <fmt:formatDate value="${userItem.lastLogin}" pattern="yyyy-MM-dd HH:mm:ss" />
+                                  <div class="row">
+                                    <div class="col-md-4 text-center mb-3">
+                                      <!-- User Profile Image -->
+                                      <c:choose>
+                                        <c:when test="${not empty userItem.profileImage}">
+                                          <img src="${pageContext.request.contextPath}/storage/uploads/profile/${userItem.profileImage}"
+                                               class="img-fluid rounded-circle mb-2"
+                                               alt="${userItem.fullName}"
+                                               style="width: 150px; height: 150px; object-fit: cover;"
+                                               onerror="this.src='${pageContext.request.contextPath}/img/default-profile.svg'">
+                                        </c:when>
+                                        <c:otherwise>
+                                          <img src="${pageContext.request.contextPath}/img/default-profile.svg"
+                                               class="img-fluid rounded-circle mb-2"
+                                               alt="Default Profile"
+                                               style="width: 150px; height: 150px; object-fit: cover;">
+                                        </c:otherwise>
+                                      </c:choose>
+                                      <h5>${userItem.fullName}</h5>
+                                      <span class="badge
+                                        <c:choose>
+                                          <c:when test="${userItem.role == 'admin'}">bg-danger</c:when>
+                                          <c:when test="${userItem.role == 'staff'}">bg-info</c:when>
+                                          <c:otherwise>bg-primary</c:otherwise>
+                                        </c:choose>">
+                                        ${userItem.role}
+                                      </span>
+                                    </div>
+                                    <div class="col-md-8">
+                                      <div class="mb-3">
+                                        <strong>ID:</strong> ${userItem.userID}
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Username:</strong> ${userItem.username}
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Email:</strong> ${userItem.email}
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Gender:</strong> ${userItem.gender}
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Phone:</strong> ${userItem.phoneNumber}
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Status:</strong>
+                                        <c:choose>
+                                          <c:when test="${userItem.isActive}">
+                                            <span class="badge bg-success">Active</span>
+                                          </c:when>
+                                          <c:otherwise>
+                                            <span class="badge bg-secondary">Inactive</span>
+                                          </c:otherwise>
+                                        </c:choose>
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Created Date:</strong> <fmt:formatDate value="${userItem.createdDate}" pattern="yyyy-MM-dd HH:mm:ss" />
+                                      </div>
+                                      <div class="mb-3">
+                                        <strong>Last Login:</strong> <fmt:formatDate value="${userItem.lastLogin}" pattern="yyyy-MM-dd HH:mm:ss" />
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                                 <div class="modal-footer">
@@ -814,7 +860,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 
             <!-- Settings Tab -->
-            <div class="tab-pane fade" id="settings">
+            <div class="tab-pane fade ${activeTab == 'settings' ? 'show active' : ''}" id="settings">
               <div
                 class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom"
               >
@@ -876,18 +922,105 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Activate tabs based on URL hash
+      // Function to set active tab in URL parameter
+      function setActiveTab(tabName) {
+        // We're using this to remember the tab for form submissions
+        // This doesn't navigate, just updates a cookie
+        document.cookie = `activeTab=${tabName}; path=/`;
+      }
+
+      // Activate tabs based on activeTab attribute or URL hash
       document.addEventListener("DOMContentLoaded", function () {
-        const hash = window.location.hash || "#dashboard";
+        const activeTab = "${activeTab}";
+        let tabSelector = "#dashboard";
+
+        if (activeTab && activeTab !== "") {
+          tabSelector = "#" + activeTab;
+        } else if (window.location.hash) {
+          tabSelector = window.location.hash;
+        }
+
         const tabToActivate = document.querySelector(
-          `.nav-link[href="${hash}"]`
+          `.nav-link[href="${tabSelector}"]`
         );
+
         if (tabToActivate) {
           const tab = new bootstrap.Tab(tabToActivate);
           tab.show();
         }
 
-        // No chart initialization needed
+        // Handle filter changes
+        const roleFilter = document.getElementById('roleFilter');
+        const statusFilter = document.getElementById('statusFilter');
+
+        if (roleFilter && statusFilter) {
+          roleFilter.addEventListener('change', function() {
+            if (this.value !== '') {
+              document.getElementById('userSearchForm').submit();
+            }
+          });
+
+          statusFilter.addEventListener('change', function() {
+            document.getElementById('userSearchForm').submit();
+          });
+        }
+
+        // Handle form submission
+        const userSearchForm = document.getElementById('userSearchForm');
+        if (userSearchForm) {
+          userSearchForm.addEventListener('submit', function(e) {
+            // Get the active tab from cookie
+            const cookies = document.cookie.split(';');
+            let activeTabCookie = '';
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.startsWith('activeTab=')) {
+                activeTabCookie = cookie.substring('activeTab='.length);
+                break;
+              }
+            }
+
+            // Set the tab input value
+            if (activeTabCookie) {
+              document.getElementById('tabInput').value = activeTabCookie;
+            }
+          });
+        }
+
+        // Handle reset button click
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        if (resetFiltersBtn) {
+          resetFiltersBtn.addEventListener('click', function() {
+            // Show the users tab
+            const usersTab = document.querySelector('.nav-link[href="#users"]');
+            if (usersTab) {
+              const tab = new bootstrap.Tab(usersTab);
+              tab.show();
+              setActiveTab('users');
+            }
+
+            // Clear search input
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+              searchInput.value = '';
+            }
+
+            // Reset role filter
+            const roleFilter = document.getElementById('roleFilter');
+            if (roleFilter) {
+              roleFilter.value = '';
+            }
+
+            // Reset status filter
+            const statusFilter = document.getElementById('statusFilter');
+            if (statusFilter) {
+              statusFilter.value = '';
+            }
+
+            // Reload the page with the users tab active
+            window.location.href = '${pageContext.request.contextPath}/admin/dashboard?tab=users';
+          });
+        }
       });
     </script>
   </body>
