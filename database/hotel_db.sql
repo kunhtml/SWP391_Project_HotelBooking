@@ -1,258 +1,237 @@
+-- Script tạo cơ sở dữ liệu Hotel_Booking hoàn chỉnh
+-- Bao gồm tất cả các bảng và dữ liệu mẫu
+-- Khắc phục các lỗi đã gặp
 
 -- Tạo cơ sở dữ liệu nếu chưa tồn tại
 IF NOT EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = 'Hotel_Booking')
 BEGIN
-    CREATE DATABASE Hotel_Booking; -- Tạo cơ sở dữ liệu mới tên là Hotel_Booking
+    CREATE DATABASE Hotel_Booking;
 END
 GO
 
-USE Hotel_Booking; -- Chuyển sang sử dụng cơ sở dữ liệu Hotel_Booking
+USE Hotel_Booking;
 GO
 
--- Xóa các bảng hiện có nếu chúng tồn tại (theo thứ tự ngược lại của các phụ thuộc)
--- Điều này đảm bảo rằng các bảng con được xóa trước các bảng cha để tránh lỗi ràng buộc khóa ngoại
-IF OBJECT_ID('dbo.Payments', 'U') IS NOT NULL DROP TABLE dbo.Payments; -- Xóa bảng Thanh toán
-IF OBJECT_ID('dbo.BookingServices', 'U') IS NOT NULL DROP TABLE dbo.BookingServices; -- Xóa bảng Dịch vụ đặt phòng
-IF OBJECT_ID('dbo.Services', 'U') IS NOT NULL DROP TABLE dbo.Services; -- Xóa bảng Dịch vụ
-IF OBJECT_ID('dbo.BookingRooms', 'U') IS NOT NULL DROP TABLE dbo.BookingRooms; -- Xóa bảng Phòng đặt
-IF OBJECT_ID('dbo.Bookings', 'U') IS NOT NULL DROP TABLE dbo.Bookings; -- Xóa bảng Đặt phòng
-IF OBJECT_ID('dbo.Rooms', 'U') IS NOT NULL DROP TABLE dbo.Rooms; -- Xóa bảng Phòng
-IF OBJECT_ID('dbo.RoomTypes', 'U') IS NOT NULL DROP TABLE dbo.RoomTypes; -- Xóa bảng Loại phòng
-IF OBJECT_ID('dbo.Hotels', 'U') IS NOT NULL DROP TABLE dbo.Hotels; -- Xóa bảng Khách sạn
-IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL DROP TABLE dbo.Users; -- Xóa bảng Người dùng
+-- Xóa các bảng hiện có nếu có
+IF OBJECT_ID('dbo.Payments', 'U') IS NOT NULL DROP TABLE dbo.Payments;
+IF OBJECT_ID('dbo.BookingServices', 'U') IS NOT NULL DROP TABLE dbo.BookingServices;
+IF OBJECT_ID('dbo.Services', 'U') IS NOT NULL DROP TABLE dbo.Services;
+IF OBJECT_ID('dbo.BookingRooms', 'U') IS NOT NULL DROP TABLE dbo.BookingRooms;
+IF OBJECT_ID('dbo.Bookings', 'U') IS NOT NULL DROP TABLE dbo.Bookings;
+IF OBJECT_ID('dbo.Rooms', 'U') IS NOT NULL DROP TABLE dbo.Rooms;
+IF OBJECT_ID('dbo.RoomTypes', 'U') IS NOT NULL DROP TABLE dbo.RoomTypes;
+IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL DROP TABLE dbo.Users;
+IF OBJECT_ID('dbo.Hotels', 'U') IS NOT NULL DROP TABLE dbo.Hotels;
 GO
 
--- Tạo bảng Người dùng (Users)
-CREATE TABLE dbo.Users (
-    userID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    fullName NVARCHAR(100) NOT NULL, -- Họ tên đầy đủ, bắt buộc
-    username NVARCHAR(50) NOT NULL UNIQUE, -- Tên đăng nhập, bắt buộc và duy nhất
-    passwordHash VARBINARY(MAX) NOT NULL, -- Mật khẩu đã được mã hóa, bắt buộc
-    salt VARBINARY(MAX) NOT NULL, -- Giá trị salt dùng để mã hóa mật khẩu, bắt buộc
-    email NVARCHAR(100) NOT NULL UNIQUE, -- Email, bắt buộc và duy nhất
-    role NVARCHAR(20) NOT NULL, -- Vai trò (admin, user, staff...), bắt buộc
-    gender NVARCHAR(10) NULL, -- Giới tính, không bắt buộc
-    phoneNumber NVARCHAR(20) NULL, -- Số điện thoại, không bắt buộc
-    hotelID INT NULL, -- ID khách sạn (cho nhân viên), không bắt buộc
-    isGroup BIT NOT NULL DEFAULT 0, -- Là tài khoản nhóm hay không, mặc định là 0 (không)
-    isActive BIT NOT NULL DEFAULT 1, -- Tài khoản có hoạt động hay không, mặc định là 1 (có)
-    createdDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày tạo tài khoản, mặc định là ngày hiện tại
-    lastLogin DATETIME NULL -- Lần đăng nhập cuối cùng, không bắt buộc
-);
-GO
-
--- Tạo bảng Khách sạn (Hotels)
+-- Tạo bảng Hotels (Khách sạn)
 CREATE TABLE dbo.Hotels (
-    hotelID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    name NVARCHAR(100) NOT NULL, -- Tên khách sạn, bắt buộc
-    address NVARCHAR(200) NOT NULL, -- Địa chỉ, bắt buộc
-    city NVARCHAR(50) NOT NULL, -- Thành phố, bắt buộc
-    country NVARCHAR(50) NOT NULL, -- Quốc gia, bắt buộc
-    postalCode NVARCHAR(20) NULL, -- Mã bưu điện, không bắt buộc
-    phone NVARCHAR(20) NOT NULL, -- Số điện thoại, bắt buộc
-    email NVARCHAR(100) NOT NULL, -- Email, bắt buộc
-    website NVARCHAR(100) NULL, -- Website, không bắt buộc
-    description NVARCHAR(MAX) NULL, -- Mô tả, không bắt buộc
-    starRating INT NULL, -- Xếp hạng sao, không bắt buộc
-    checkInTime TIME NOT NULL DEFAULT '14:00:00', -- Giờ nhận phòng, mặc định là 14:00
-    checkOutTime TIME NOT NULL DEFAULT '12:00:00', -- Giờ trả phòng, mặc định là 12:00
-    isActive BIT NOT NULL DEFAULT 1, -- Khách sạn có hoạt động hay không, mặc định là 1 (có)
-    createdDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày tạo, mặc định là ngày hiện tại
-    updatedDate DATETIME NULL -- Ngày cập nhật, không bắt buộc
+    hotelID INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    address NVARCHAR(255) NOT NULL,
+    city NVARCHAR(50) NOT NULL,
+    country NVARCHAR(50) NOT NULL,
+    phone NVARCHAR(20) NOT NULL,
+    email NVARCHAR(100) NOT NULL,
+    description NVARCHAR(MAX) NULL,
+    starRating INT NOT NULL,
+    checkInTime TIME NOT NULL DEFAULT '14:00:00',
+    checkOutTime TIME NOT NULL DEFAULT '12:00:00',
+    isActive BIT NOT NULL DEFAULT 1,
+    createdDate DATETIME NOT NULL DEFAULT GETDATE(),
+    updatedDate DATETIME NULL
 );
 GO
 
--- Thêm khóa ngoại vào bảng Users để liên kết với bảng Hotels
-ALTER TABLE dbo.Users
-ADD CONSTRAINT FK_Users_Hotels FOREIGN KEY (hotelID) REFERENCES dbo.Hotels(hotelID);
+-- Tạo bảng Users (Người dùng)
+CREATE TABLE dbo.Users (
+    userID INT IDENTITY(1,1) PRIMARY KEY,
+    fullName NVARCHAR(100) NOT NULL,
+    username NVARCHAR(50) NOT NULL UNIQUE,
+    passwordHash VARBINARY(MAX) NOT NULL,
+    salt VARBINARY(MAX) NOT NULL,
+    email NVARCHAR(100) NOT NULL UNIQUE,
+    role NVARCHAR(20) NOT NULL,
+    gender NVARCHAR(10) NULL,
+    phoneNumber NVARCHAR(20) NULL,
+    hotelID INT NULL,
+    isGroup BIT NOT NULL DEFAULT 0,
+    isActive BIT NOT NULL DEFAULT 1,
+    createdDate DATETIME NOT NULL DEFAULT GETDATE(),
+    lastLogin DATETIME NULL,
+    profileImage VARCHAR(255) NULL,
+    CONSTRAINT FK_Users_Hotels FOREIGN KEY (hotelID) REFERENCES dbo.Hotels(hotelID)
+);
 GO
 
--- Tạo bảng Loại phòng (RoomTypes)
+-- Tạo bảng RoomTypes (Loại phòng)
 CREATE TABLE dbo.RoomTypes (
-    roomTypeID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    hotelID INT NOT NULL, -- ID khách sạn, bắt buộc
-    name NVARCHAR(50) NOT NULL, -- Tên loại phòng, bắt buộc
-    description NVARCHAR(MAX) NULL, -- Mô tả, không bắt buộc
-    basePrice DECIMAL(10, 2) NOT NULL, -- Giá cơ bản, bắt buộc
-    capacity INT NOT NULL, -- Sức chứa (số người), bắt buộc
-    bedType NVARCHAR(50) NULL, -- Loại giường, không bắt buộc
-    amenities NVARCHAR(MAX) NULL, -- Tiện nghi, không bắt buộc
-    isActive BIT NOT NULL DEFAULT 1, -- Loại phòng có hoạt động hay không, mặc định là 1 (có)
-    createdDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày tạo, mặc định là ngày hiện tại
-    updatedDate DATETIME NULL, -- Ngày cập nhật, không bắt buộc
-    CONSTRAINT FK_RoomTypes_Hotels FOREIGN KEY (hotelID) REFERENCES dbo.Hotels(hotelID) -- Khóa ngoại liên kết với bảng Hotels
+    roomTypeID INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(50) NOT NULL,
+    description NVARCHAR(MAX) NULL,
+    basePrice DECIMAL(10, 2) NOT NULL,
+    capacity INT NOT NULL,
+    bedType NVARCHAR(50) NOT NULL,
+    amenities NVARCHAR(MAX) NULL,
+    imageURL NVARCHAR(255) NULL,
+    isActive BIT NOT NULL DEFAULT 1,
+    createdDate DATETIME NOT NULL DEFAULT GETDATE(),
+    updatedDate DATETIME NULL
 );
 GO
 
--- Tạo bảng Phòng (Rooms)
+-- Tạo bảng Rooms (Phòng)
 CREATE TABLE dbo.Rooms (
-    roomID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    roomTypeID INT NOT NULL, -- ID loại phòng, bắt buộc
-    roomNumber NVARCHAR(20) NOT NULL, -- Số phòng, bắt buộc
-    floor NVARCHAR(10) NULL, -- Tầng, không bắt buộc
-    status NVARCHAR(20) NOT NULL DEFAULT 'Available', -- Trạng thái (Available, Occupied, Maintenance...), mặc định là Available
-    isActive BIT NOT NULL DEFAULT 1, -- Phòng có hoạt động hay không, mặc định là 1 (có)
-    createdDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày tạo, mặc định là ngày hiện tại
-    updatedDate DATETIME NULL, -- Ngày cập nhật, không bắt buộc
-    CONSTRAINT FK_Rooms_RoomTypes FOREIGN KEY (roomTypeID) REFERENCES dbo.RoomTypes(roomTypeID), -- Khóa ngoại liên kết với bảng RoomTypes
-    CONSTRAINT UQ_Rooms_RoomNumber UNIQUE (roomTypeID, roomNumber) -- Ràng buộc duy nhất cho số phòng trong mỗi loại phòng
+    roomID INT IDENTITY(1,1) PRIMARY KEY,
+    roomNumber NVARCHAR(20) NOT NULL,
+    roomTypeID INT NOT NULL,
+    hotelID INT NOT NULL,
+    floor INT NOT NULL,
+    status NVARCHAR(20) NOT NULL DEFAULT 'Available',
+    isActive BIT NOT NULL DEFAULT 1,
+    createdDate DATETIME NOT NULL DEFAULT GETDATE(),
+    updatedDate DATETIME NULL,
+    CONSTRAINT FK_Rooms_RoomTypes FOREIGN KEY (roomTypeID) REFERENCES dbo.RoomTypes(roomTypeID),
+    CONSTRAINT FK_Rooms_Hotels FOREIGN KEY (hotelID) REFERENCES dbo.Hotels(hotelID),
+    CONSTRAINT UQ_Rooms_RoomNumber_HotelID UNIQUE (roomNumber, hotelID)
 );
 GO
 
--- Tạo bảng Đặt phòng (Bookings)
+-- Tạo bảng Bookings (Đặt phòng)
 CREATE TABLE dbo.Bookings (
-    bookingID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    userID INT NOT NULL, -- ID người dùng, bắt buộc
-    bookingDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày đặt phòng, mặc định là ngày hiện tại
-    checkInDate DATE NOT NULL, -- Ngày nhận phòng, bắt buộc
-    checkOutDate DATE NOT NULL, -- Ngày trả phòng, bắt buộc
-    totalGuests INT NOT NULL, -- Tổng số khách, bắt buộc
-    adults INT NOT NULL, -- Số người lớn, bắt buộc
-    children INT NOT NULL DEFAULT 0, -- Số trẻ em, mặc định là 0
-    specialRequests NVARCHAR(MAX) NULL, -- Yêu cầu đặc biệt, không bắt buộc
-    status NVARCHAR(20) NOT NULL DEFAULT 'Pending', -- Trạng thái (Pending, Confirmed, Cancelled, Completed), mặc định là Pending
-    totalAmount DECIMAL(10, 2) NOT NULL, -- Tổng số tiền, bắt buộc
-    paymentStatus NVARCHAR(20) NOT NULL DEFAULT 'Unpaid', -- Trạng thái thanh toán (Unpaid, Partially Paid, Paid), mặc định là Unpaid
-    createdDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày tạo, mặc định là ngày hiện tại
-    updatedDate DATETIME NULL, -- Ngày cập nhật, không bắt buộc
-    CONSTRAINT FK_Bookings_Users FOREIGN KEY (userID) REFERENCES dbo.Users(userID), -- Khóa ngoại liên kết với bảng Users
-    CONSTRAINT CK_Bookings_Dates CHECK (checkOutDate > checkInDate) -- Ràng buộc kiểm tra ngày trả phòng phải sau ngày nhận phòng
+    bookingID INT IDENTITY(1,1) PRIMARY KEY,
+    userID INT NOT NULL,
+    bookingDate DATETIME NOT NULL DEFAULT GETDATE(),
+    checkInDate DATE NOT NULL,
+    checkOutDate DATE NOT NULL,
+    totalGuests INT NOT NULL,
+    adults INT NOT NULL,
+    children INT NOT NULL DEFAULT 0,
+    specialRequests NVARCHAR(MAX) NULL,
+    status NVARCHAR(20) NOT NULL DEFAULT 'Pending',
+    totalAmount DECIMAL(10, 2) NOT NULL,
+    paymentStatus NVARCHAR(20) NOT NULL DEFAULT 'Unpaid',
+    createdDate DATETIME NOT NULL DEFAULT GETDATE(),
+    updatedDate DATETIME NULL,
+    CONSTRAINT FK_Bookings_Users FOREIGN KEY (userID) REFERENCES dbo.Users(userID),
+    CONSTRAINT CK_Bookings_Dates CHECK (checkOutDate > checkInDate)
 );
 GO
 
--- Tạo bảng Phòng đặt (BookingRooms) - cho phép đặt nhiều phòng trong một đơn đặt phòng
+-- Tạo bảng BookingRooms (Phòng đã đặt)
 CREATE TABLE dbo.BookingRooms (
-    bookingRoomID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    bookingID INT NOT NULL, -- ID đặt phòng, bắt buộc
-    roomID INT NOT NULL, -- ID phòng, bắt buộc
-    pricePerNight DECIMAL(10, 2) NOT NULL, -- Giá mỗi đêm, bắt buộc
-    CONSTRAINT FK_BookingRooms_Bookings FOREIGN KEY (bookingID) REFERENCES dbo.Bookings(bookingID), -- Khóa ngoại liên kết với bảng Bookings
-    CONSTRAINT FK_BookingRooms_Rooms FOREIGN KEY (roomID) REFERENCES dbo.Rooms(roomID), -- Khóa ngoại liên kết với bảng Rooms
-    CONSTRAINT UQ_BookingRooms UNIQUE (bookingID, roomID) -- Ràng buộc duy nhất cho mỗi phòng trong một đơn đặt phòng
+    bookingRoomID INT IDENTITY(1,1) PRIMARY KEY,
+    bookingID INT NOT NULL,
+    roomID INT NOT NULL,
+    pricePerNight DECIMAL(10, 2) NOT NULL,
+    CONSTRAINT FK_BookingRooms_Bookings FOREIGN KEY (bookingID) REFERENCES dbo.Bookings(bookingID),
+    CONSTRAINT FK_BookingRooms_Rooms FOREIGN KEY (roomID) REFERENCES dbo.Rooms(roomID),
+    CONSTRAINT UQ_BookingRooms_BookingID_RoomID UNIQUE (bookingID, roomID)
 );
 GO
 
--- Tạo bảng Dịch vụ (Services)
+-- Tạo bảng Services (Dịch vụ)
 CREATE TABLE dbo.Services (
-    serviceID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    hotelID INT NOT NULL, -- ID khách sạn, bắt buộc
-    name NVARCHAR(100) NOT NULL, -- Tên dịch vụ, bắt buộc
-    description NVARCHAR(MAX) NULL, -- Mô tả, không bắt buộc
-    price DECIMAL(10, 2) NOT NULL, -- Giá, bắt buộc
-    category NVARCHAR(50) NULL, -- Danh mục (Restaurant, Spa, Laundry...), không bắt buộc
-    isActive BIT NOT NULL DEFAULT 1, -- Dịch vụ có hoạt động hay không, mặc định là 1 (có)
-    createdDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày tạo, mặc định là ngày hiện tại
-    updatedDate DATETIME NULL, -- Ngày cập nhật, không bắt buộc
-    CONSTRAINT FK_Services_Hotels FOREIGN KEY (hotelID) REFERENCES dbo.Hotels(hotelID) -- Khóa ngoại liên kết với bảng Hotels
+    serviceID INT IDENTITY(1,1) PRIMARY KEY,
+    name NVARCHAR(100) NOT NULL,
+    description NVARCHAR(MAX) NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    hotelID INT NOT NULL,
+    category NVARCHAR(50) NOT NULL,
+    isActive BIT NOT NULL DEFAULT 1,
+    createdDate DATETIME NOT NULL DEFAULT GETDATE(),
+    updatedDate DATETIME NULL,
+    CONSTRAINT FK_Services_Hotels FOREIGN KEY (hotelID) REFERENCES dbo.Hotels(hotelID)
 );
 GO
 
--- Tạo bảng Dịch vụ đặt phòng (BookingServices) - cho các dịch vụ được thêm vào đơn đặt phòng
+-- Tạo bảng BookingServices (Dịch vụ đã đặt)
 CREATE TABLE dbo.BookingServices (
-    bookingServiceID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    bookingID INT NOT NULL, -- ID đặt phòng, bắt buộc
-    serviceID INT NOT NULL, -- ID dịch vụ, bắt buộc
-    quantity INT NOT NULL DEFAULT 1, -- Số lượng, mặc định là 1
-    price DECIMAL(10, 2) NOT NULL, -- Giá, bắt buộc
-    serviceDate DATETIME NOT NULL, -- Ngày sử dụng dịch vụ, bắt buộc
-    notes NVARCHAR(MAX) NULL, -- Ghi chú, không bắt buộc
-    CONSTRAINT FK_BookingServices_Bookings FOREIGN KEY (bookingID) REFERENCES dbo.Bookings(bookingID), -- Khóa ngoại liên kết với bảng Bookings
-    CONSTRAINT FK_BookingServices_Services FOREIGN KEY (serviceID) REFERENCES dbo.Services(serviceID) -- Khóa ngoại liên kết với bảng Services
+    bookingServiceID INT IDENTITY(1,1) PRIMARY KEY,
+    bookingID INT NOT NULL,
+    serviceID INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price DECIMAL(10, 2) NOT NULL,
+    CONSTRAINT FK_BookingServices_Bookings FOREIGN KEY (bookingID) REFERENCES dbo.Bookings(bookingID),
+    CONSTRAINT FK_BookingServices_Services FOREIGN KEY (serviceID) REFERENCES dbo.Services(serviceID)
 );
 GO
 
--- Tạo bảng Thanh toán (Payments)
+-- Tạo bảng Payments (Thanh toán)
 CREATE TABLE dbo.Payments (
-    paymentID INT IDENTITY(1,1) PRIMARY KEY, -- Khóa chính, tự động tăng
-    bookingID INT NOT NULL, -- ID đặt phòng, bắt buộc
-    amount DECIMAL(10, 2) NOT NULL, -- Số tiền, bắt buộc
-    paymentDate DATETIME NOT NULL DEFAULT GETDATE(), -- Ngày thanh toán, mặc định là ngày hiện tại
-    paymentMethod NVARCHAR(50) NOT NULL, -- Phương thức thanh toán (Credit Card, Cash, Bank Transfer...), bắt buộc
-    transactionID NVARCHAR(100) NULL, -- ID giao dịch, không bắt buộc
-    status NVARCHAR(20) NOT NULL DEFAULT 'Completed', -- Trạng thái (Pending, Completed, Failed, Refunded), mặc định là Completed
-    notes NVARCHAR(MAX) NULL, -- Ghi chú, không bắt buộc
-    CONSTRAINT FK_Payments_Bookings FOREIGN KEY (bookingID) REFERENCES dbo.Bookings(bookingID) -- Khóa ngoại liên kết với bảng Bookings
+    paymentID INT IDENTITY(1,1) PRIMARY KEY,
+    bookingID INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    paymentMethod NVARCHAR(50) NOT NULL,
+    paymentDate DATETIME NOT NULL DEFAULT GETDATE(),
+    status NVARCHAR(20) NOT NULL DEFAULT 'Completed',
+    transactionID NVARCHAR(100) NULL,
+    CONSTRAINT FK_Payments_Bookings FOREIGN KEY (bookingID) REFERENCES dbo.Bookings(bookingID)
 );
 GO
 
 -- Tạo các chỉ mục để cải thiện hiệu suất truy vấn
-CREATE INDEX IX_Users_Email ON dbo.Users(email); -- Chỉ mục cho email người dùng
-CREATE INDEX IX_Users_PhoneNumber ON dbo.Users(phoneNumber); -- Chỉ mục cho số điện thoại người dùng
-CREATE INDEX IX_Bookings_UserID ON dbo.Bookings(userID); -- Chỉ mục cho ID người dùng trong bảng Bookings
-CREATE INDEX IX_Bookings_Dates ON dbo.Bookings(checkInDate, checkOutDate); -- Chỉ mục cho ngày nhận và trả phòng
-CREATE INDEX IX_Rooms_Status ON dbo.Rooms(status); -- Chỉ mục cho trạng thái phòng
-CREATE INDEX IX_BookingRooms_RoomID ON dbo.BookingRooms(roomID); -- Chỉ mục cho ID phòng trong bảng BookingRooms
+CREATE INDEX IX_Users_Email ON dbo.Users(email);
+CREATE INDEX IX_Users_PhoneNumber ON dbo.Users(phoneNumber);
+CREATE INDEX IX_Bookings_UserID ON dbo.Bookings(userID);
+CREATE INDEX IX_Bookings_Dates ON dbo.Bookings(checkInDate, checkOutDate);
+CREATE INDEX IX_Rooms_Status ON dbo.Rooms(status);
+CREATE INDEX IX_BookingRooms_RoomID ON dbo.BookingRooms(roomID);
 GO
 
 -- Chèn dữ liệu mẫu
 
--- Chèn một khách sạn mặc định
-INSERT INTO dbo.Hotels (name, address, city, country, postalCode, phone, email, website, description, starRating)
-VALUES ('Luxury Hotel', '123 Main Street', 'New York', 'USA', '10001', '+1-212-555-1234', 'info@luxuryhotel.com', 'www.luxuryhotel.com', 'Khách sạn 5 sao sang trọng ở trung tâm thành phố New York.', 5);
+-- Chèn khách sạn mẫu
+INSERT INTO dbo.Hotels (name, address, city, country, phone, email, description, starRating)
+VALUES ('Luxury Hotel & Spa', '123 Main Street', 'New York', 'USA', '+1-212-555-1234', 'info@luxuryhotel.com', 
+        'A luxurious 5-star hotel in the heart of New York City, offering premium amenities and exceptional service.', 5);
 GO
 
--- Chèn các loại phòng
-INSERT INTO dbo.RoomTypes (hotelID, name, description, basePrice, capacity, bedType, amenities)
+-- Chèn loại phòng mẫu
+INSERT INTO dbo.RoomTypes (name, description, basePrice, capacity, bedType, amenities)
 VALUES 
-(1, 'Standard Room', 'Phòng tiêu chuẩn thoải mái với các tiện nghi cơ bản.', 100.00, 2, 'Queen', 'Wi-Fi, TV, Điều hòa, Mini Bar'),
-(1, 'Deluxe Room', 'Phòng rộng rãi với các tiện nghi cao cấp.', 150.00, 2, 'King', 'Wi-Fi, TV, Điều hòa, Mini Bar, Ban công, Tầm nhìn thành phố'),
-(1, 'Luxury Suite', 'Phòng suite sang trọng với khu vực sinh hoạt riêng biệt.', 250.00, 4, 'King + Sofa Bed', 'Wi-Fi, TV, Điều hòa, Mini Bar, Ban công, Tầm nhìn thành phố, Bồn tắm sục, Bếp nhỏ'),
-(1, 'Family Room', 'Phòng rộng rãi lý tưởng cho gia đình.', 200.00, 4, '2 Queen', 'Wi-Fi, TV, Điều hòa, Mini Bar, Phòng kết nối');
+('Standard Room', 'Comfortable room with essential amenities', 100.00, 2, 'Queen', 'Wi-Fi, TV, Air Conditioning, Mini Bar'),
+('Deluxe Room', 'Spacious room with premium amenities', 150.00, 2, 'King', 'Wi-Fi, TV, Air Conditioning, Mini Bar, Bathtub, City View'),
+('Suite', 'Luxury suite with separate living area', 250.00, 4, 'King + Sofa Bed', 'Wi-Fi, TV, Air Conditioning, Mini Bar, Bathtub, City View, Living Room, Kitchenette'),
+('Family Room', 'Spacious room for families', 200.00, 4, 'Two Queen Beds', 'Wi-Fi, TV, Air Conditioning, Mini Bar, Bathtub');
 GO
 
--- Chèn các phòng
-INSERT INTO dbo.Rooms (roomTypeID, roomNumber, floor, status)
+-- Chèn phòng mẫu
+INSERT INTO dbo.Rooms (roomNumber, roomTypeID, hotelID, floor, status)
 VALUES 
--- Phòng Standard
-(1, '101', '1', 'Available'),
-(1, '102', '1', 'Available'),
-(1, '103', '1', 'Available'),
-(1, '104', '1', 'Available'),
-(1, '105', '1', 'Available'),
--- Phòng Deluxe
-(2, '201', '2', 'Available'),
-(2, '202', '2', 'Available'),
-(2, '203', '2', 'Available'),
-(2, '204', '2', 'Available'),
-(2, '205', '2', 'Available'),
--- Phòng Luxury Suite
-(3, '301', '3', 'Available'),
-(3, '302', '3', 'Available'),
-(3, '303', '3', 'Available'),
--- Phòng Family
-(4, '401', '4', 'Available'),
-(4, '402', '4', 'Available'),
-(4, '403', '4', 'Available');
+('101', 1, 1, 1, 'Available'), ('102', 1, 1, 1, 'Available'), ('103', 1, 1, 1, 'Available'), ('104', 1, 1, 1, 'Available'),
+('201', 2, 1, 2, 'Available'), ('202', 2, 1, 2, 'Available'), ('203', 2, 1, 2, 'Available'), ('204', 2, 1, 2, 'Available'),
+('301', 3, 1, 3, 'Available'), ('302', 3, 1, 3, 'Available'), ('303', 3, 1, 3, 'Available'), ('304', 3, 1, 3, 'Available'),
+('401', 4, 1, 4, 'Available'), ('402', 4, 1, 4, 'Available'), ('403', 4, 1, 4, 'Available'), ('404', 4, 1, 4, 'Available');
 GO
 
--- Chèn các dịch vụ
-INSERT INTO dbo.Services (hotelID, name, description, price, category)
+-- Chèn dịch vụ mẫu
+INSERT INTO dbo.Services (name, description, price, hotelID, category)
 VALUES 
-(1, 'Breakfast Buffet', 'Bữa sáng buffet đầy đủ với các món nóng và lạnh.', 25.00, 'Restaurant'),
-(1, 'Room Service', 'Dịch vụ phòng 24 giờ.', 10.00, 'Restaurant'),
-(1, 'Spa Treatment', 'Dịch vụ spa thư giãn.', 80.00, 'Spa'),
-(1, 'Laundry Service', 'Dịch vụ giặt là trong ngày.', 15.00, 'Laundry'),
-(1, 'Airport Transfer', 'Dịch vụ đưa đón sân bay riêng.', 50.00, 'Transportation'),
-(1, 'Gym Access', 'Sử dụng phòng tập gym của khách sạn.', 10.00, 'Fitness'),
-(1, 'Business Center', 'Sử dụng trung tâm doanh nhân với dịch vụ in ấn và quét tài liệu.', 20.00, 'Business');
+('Breakfast Buffet', 'Full breakfast buffet with international cuisine', 25.00, 1, 'Dining'),
+('Room Service', '24-hour room service', 10.00, 1, 'Dining'),
+('Spa Treatment', 'Full body massage and spa treatment', 120.00, 1, 'Wellness'),
+('Airport Transfer', 'Private transfer to/from airport', 50.00, 1, 'Transportation'),
+('Laundry Service', 'Same-day laundry service', 30.00, 1, 'Housekeeping'),
+('Gym Access', 'Access to fully equipped gym', 15.00, 1, 'Fitness'),
+('Swimming Pool', 'Access to rooftop infinity pool', 20.00, 1, 'Recreation');
 GO
 
--- Chèn người dùng admin (mật khẩu: admin123)
--- Lưu ý: Trong ứng dụng thực tế, bạn sẽ sử dụng mã hóa mật khẩu đúng cách
--- Việc mã hóa mật khẩu thực tế được thực hiện trong mã Java
+-- Chèn người dùng admin với mật khẩu đã hash đúng cách (mật khẩu: admin123)
+-- Sử dụng salt và hash cố định để đảm bảo mật khẩu hoạt động
 INSERT INTO dbo.Users (fullName, username, passwordHash, salt, email, role, gender, phoneNumber, hotelID, isGroup, isActive)
-VALUES ('Admin User', 'admin', 0x0123456789ABCDEF, 0x0123456789ABCDEF, 'admin@luxuryhotel.com', 'admin', 'Male', '+1-212-555-0000', 1, 0, 1);
+VALUES ('Admin User', 'admin', 0x8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918, 0x0123456789ABCDEF0123456789ABCDEF, 
+        'admin@luxuryhotel.com', 'admin', 'Male', '+1-212-555-0000', 1, 0, 1);
 GO
 
--- Hiển thị cấu trúc bảng
-PRINT 'Cơ sở dữ liệu đã được tạo thành công. Cấu trúc bảng:';
-EXEC sp_help 'Users'; -- Hiển thị cấu trúc bảng Users
-EXEC sp_help 'Hotels'; -- Hiển thị cấu trúc bảng Hotels
-EXEC sp_help 'RoomTypes'; -- Hiển thị cấu trúc bảng RoomTypes
-EXEC sp_help 'Rooms'; -- Hiển thị cấu trúc bảng Rooms
-EXEC sp_help 'Bookings'; -- Hiển thị cấu trúc bảng Bookings
-EXEC sp_help 'BookingRooms'; -- Hiển thị cấu trúc bảng BookingRooms
-EXEC sp_help 'Services'; -- Hiển thị cấu trúc bảng Services
-EXEC sp_help 'BookingServices'; -- Hiển thị cấu trúc bảng BookingServices
-EXEC sp_help 'Payments'; -- Hiển thị cấu trúc bảng Payments
+-- Chèn người dùng test với mật khẩu đã hash đúng cách (mật khẩu: password123)
+INSERT INTO dbo.Users (fullName, username, passwordHash, salt, email, role, gender, phoneNumber, isGroup, isActive)
+VALUES ('Test User', 'testuser', 0xEF92B778BAFE771E89245B89ECBC08A44A4E166C06659911881F383D4473E94F, 0xFEDCBA9876543210FEDCBA9876543210, 
+        'testuser@example.com', 'user', 'Male', '1234567890', 0, 1);
+GO
+
+-- Hiển thị thông báo hoàn thành
+PRINT 'Cơ sở dữ liệu Hotel_Booking đã được tạo thành công!';
+PRINT 'Tài khoản admin: username=admin, password=admin123';
+PRINT 'Tài khoản test: username=testuser, password=password123';
 GO
