@@ -1,5 +1,3 @@
--- Script cơ sở dữ liệu Đặt phòng khách sạn
--- Script này tạo một cơ sở dữ liệu đầy đủ cho hệ thống đặt phòng khách sạn
 
 -- Tạo cơ sở dữ liệu nếu chưa tồn tại
 IF NOT EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = 'Hotel_Booking')
