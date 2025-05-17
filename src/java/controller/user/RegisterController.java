@@ -11,6 +11,7 @@ import dal.UserDAO;
 
 /**
  * Controller for handling user registration
+ * Simple implementation without complex password handling
  */
 @WebServlet(name = "RegisterController", urlPatterns = {"/register"})
 public class RegisterController extends HttpServlet {
