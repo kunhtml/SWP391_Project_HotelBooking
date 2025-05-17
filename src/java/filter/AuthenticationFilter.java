@@ -24,17 +24,24 @@ public class AuthenticationFilter implements Filter {
      */
     public AuthenticationFilter() {
     }
-    
+
     /**
-     * Initialize the filter
+     * Init method
      * @param filterConfig Filter configuration
      */
     @Override
-    public void init(FilterConfig filterConfig) {
+    public void init(FilterConfig filterConfig) throws ServletException {
     }
-    
+
     /**
-     * Perform the filtering
+     * Destroy method
+     */
+    @Override
+    public void destroy() {
+    }
+
+    /**
+     * Do filter method
      * @param request Servlet request
      * @param response Servlet response
      * @param chain Filter chain
@@ -50,18 +57,11 @@ public class AuthenticationFilter implements Filter {
         
         // Check if user is logged in
         if (AuthUtil.isLoggedIn(httpRequest)) {
-            // User is authenticated, continue the request
+            // User is logged in, continue
             chain.doFilter(request, response);
         } else {
-            // User is not authenticated, redirect to login page
+            // User is not logged in, redirect to login page
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/login");
         }
-    }
-    
-    /**
-     * Clean up resources
-     */
-    @Override
-    public void destroy() {
     }
 }
