@@ -1,4 +1,3 @@
-
 package controller.user;
 
 import jakarta.servlet.ServletException;
@@ -10,10 +9,10 @@ import java.io.IOException;
 import model.User;
 import dal.UserDAO;
 import utils.AuthUtil;
-import utils.PasswordUtil;
 
 /**
  * Controller for handling login requests
+ * Simple implementation without complex password handling
  */
 @WebServlet(name = "LoginController", urlPatterns = {"/login"})
 public class LoginController extends HttpServlet {
@@ -32,6 +31,12 @@ public class LoginController extends HttpServlet {
         if (AuthUtil.isLoggedIn(request)) {
             response.sendRedirect("home");
             return;
+        }
+        
+        // Check for remember-me cookie
+        String rememberedUsername = AuthUtil.getRememberedUsername(request);
+        if (rememberedUsername != null) {
+            request.setAttribute("rememberedUsername", rememberedUsername);
         }
         
         // Forward to login page
@@ -60,7 +65,7 @@ public class LoginController extends HttpServlet {
             return;
         }
         
-        // Check if username is an email or phone number
+        // Find user by username, email, or phone number
         UserDAO userDAO = new UserDAO();
         User user = null;
         
@@ -78,7 +83,7 @@ public class LoginController extends HttpServlet {
         }
         
         // Check if user exists and password is correct
-        if (user != null && PasswordUtil.verifyPassword(password, user.getPasswordHash(), user.getSalt())) {
+        if (user != null && password.equals(user.getPassword())) {
             // Update last login time
             userDAO.updateLastLogin(user.getUserID());
             
@@ -87,10 +92,7 @@ public class LoginController extends HttpServlet {
             
             // Handle remember me
             if (rememberMe) {
-                // In a real application, you would generate a secure token
-                // and store it in a database for later verification
-                String token = "some-secure-token";
-                AuthUtil.setRememberMeCookie(response, user.getUsername(), token);
+                AuthUtil.setRememberMeCookie(response, user.getUsername());
             }
             
             // Redirect to home page
