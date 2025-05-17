@@ -54,8 +54,20 @@ public class AdminDashboardController extends HttpServlet {
         // Get recent bookings for dashboard
         List<Booking> recentBookings = bookingDAO.getBookings(1, 5); // Get first 5 bookings
 
+        // Get search parameters
+        String searchQuery = request.getParameter("search");
+        String roleFilter = request.getParameter("role");
+        String statusFilter = request.getParameter("status");
+
         // Get data for each tab
-        List<User> users = userDAO.getUsers(1, 10); // Get first 10 users
+        List<User> users;
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            users = userDAO.searchUsers(searchQuery, roleFilter, statusFilter);
+        } else if (roleFilter != null && !roleFilter.isEmpty()) {
+            users = userDAO.getUsersByRole(roleFilter, statusFilter);
+        } else {
+            users = userDAO.getUsers(1, 10); // Get first 10 users
+        }
         List<Room> rooms = roomDAO.getRooms(1, 10); // Get first 10 rooms
         List<Booking> bookings = bookingDAO.getBookings(1, 10); // Get first 10 bookings
         List<Service> services = serviceDAO.getServices(1, 10); // Get first 10 services
@@ -92,6 +104,12 @@ public class AdminDashboardController extends HttpServlet {
         if (errorMessage != null) {
             request.setAttribute("errorMessage", errorMessage);
             request.getSession().removeAttribute("errorMessage");
+        }
+
+        // Handle tab parameter for tab navigation
+        String tab = request.getParameter("tab");
+        if (tab != null && !tab.isEmpty()) {
+            request.setAttribute("activeTab", tab);
         }
 
         // Forward to admin dashboard page
