@@ -1,5 +1,6 @@
 package dal;
 
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -197,7 +198,7 @@ public class UserDAO extends DBContext {
      */
     public boolean updateUser(User user) {
         String sql = "UPDATE Users SET fullName = ?, email = ?, role = ?, gender = ?, "
-                   + "phoneNumber = ?, hotelID = ?, isGroup = ?, isActive = ? "
+                   + "phoneNumber = ?, hotelID = ?, isGroup = ?, isActive = ?, profileImage = ? "
                    + "WHERE userID = ?";
 
         try (Connection conn = getConnection();
@@ -211,7 +212,8 @@ public class UserDAO extends DBContext {
             stmt.setInt(6, user.getHotelID());
             stmt.setBoolean(7, user.getIsGroup());
             stmt.setBoolean(8, user.getIsActive());
-            stmt.setInt(9, user.getUserID());
+            stmt.setString(9, user.getProfileImage());
+            stmt.setInt(10, user.getUserID());
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -275,6 +277,206 @@ public class UserDAO extends DBContext {
     }
 
     /**
+     * Get all users
+     * @return List of all users
+     */
+    public List<User> getAllUsers() {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM Users ORDER BY userID";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                User user = mapUser(rs);
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting all users: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
+     * Get users with pagination
+     * @param pageNumber Page number (1-based)
+     * @param pageSize Number of items per page
+     * @return List of users for the specified page
+     */
+    public List<User> getUsers(int pageNumber, int pageSize) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM Users ORDER BY userID " +
+                     "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, (pageNumber - 1) * pageSize);
+            stmt.setInt(2, pageSize);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User user = mapUser(rs);
+                    users.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting users with pagination: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
+     * Get total number of users
+     * @return Total number of users
+     */
+    public int getTotalUsers() {
+        String sql = "SELECT COUNT(*) FROM Users";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting total users: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    /**
+     * Delete a user (soft delete by setting isActive to 0)
+     * @param userID User ID
+     * @return true if successful, false otherwise
+     */
+    public boolean deleteUser(int userID) {
+        String sql = "UPDATE Users SET isActive = 0 WHERE userID = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+
+            int rowsAffected = stmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error deleting user: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Search users by name, email, or username
+     * @param searchTerm Search term
+     * @return List of matching users
+     */
+    public List<User> searchUsers(String searchTerm) {
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM Users WHERE " +
+                     "fullName LIKE ? OR " +
+                     "email LIKE ? OR " +
+                     "username LIKE ? " +
+                     "ORDER BY userID";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            String searchPattern = "%" + searchTerm + "%";
+            stmt.setString(1, searchPattern);
+            stmt.setString(2, searchPattern);
+            stmt.setString(3, searchPattern);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User user = mapUser(rs);
+                    users.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching users: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
+     * Filter users by role and/or active status
+     * @param role Role to filter by (can be null for all roles)
+     * @param isActive Active status to filter by (can be null for all statuses)
+     * @return List of matching users
+     */
+    public List<User> filterUsers(String role, Boolean isActive) {
+        List<User> users = new ArrayList<>();
+
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM Users WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (role != null && !role.isEmpty()) {
+            sqlBuilder.append(" AND role = ?");
+            params.add(role);
+        }
+
+        if (isActive != null) {
+            sqlBuilder.append(" AND isActive = ?");
+            params.add(isActive);
+        }
+
+        sqlBuilder.append(" ORDER BY userID");
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof String) {
+                    stmt.setString(i + 1, (String) param);
+                } else if (param instanceof Boolean) {
+                    stmt.setBoolean(i + 1, (Boolean) param);
+                }
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User user = mapUser(rs);
+                    users.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error filtering users: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
+     * Verify user's password
+     * @param userID User ID
+     * @param password Password to verify
+     * @return true if password is correct, false otherwise
+     */
+    public boolean verifyPassword(int userID, String password) {
+        String sql = "SELECT passwordHash, salt FROM Users WHERE userID = ?";
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    byte[] storedHash = rs.getBytes("passwordHash");
+                    byte[] salt = rs.getBytes("salt");
+
+                    return PasswordUtil.verifyPassword(password, storedHash, salt);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error verifying password: " + e.getMessage());
+        }
+        return false;
+    }
+
+    /**
      * Map a ResultSet row to a User object
      * @param rs ResultSet to map
      * @return Mapped User object
@@ -296,6 +498,15 @@ public class UserDAO extends DBContext {
         user.setIsActive(rs.getBoolean("isActive"));
         user.setCreatedDate(rs.getTimestamp("createdDate"));
         user.setLastLogin(rs.getTimestamp("lastLogin"));
+
+        // Handle profileImage column which might not exist in older database versions
+        try {
+            user.setProfileImage(rs.getString("profileImage"));
+        } catch (SQLException e) {
+            // If the column doesn't exist, just set it to null
+            user.setProfileImage(null);
+        }
+
         return user;
     }
 }

@@ -22,6 +22,7 @@ public class User {
     private boolean isActive;
     private Timestamp createdDate;
     private Timestamp lastLogin;
+    private String profileImage; // Path to the profile image
 
     /**
      * Default constructor
@@ -166,5 +167,13 @@ public class User {
 
     public void setLastLogin(Timestamp lastLogin) {
         this.lastLogin = lastLogin;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 }
