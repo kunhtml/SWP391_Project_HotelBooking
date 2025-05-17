@@ -1,6 +1,5 @@
 package dal;
 
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,13 +8,34 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import model.User;
-import utils.PasswordUtil;
 
 /**
  * Data Access Object for User entity
- * Handles database operations related to users
+ * Simple implementation without complex password handling
  */
 public class UserDAO extends DBContext {
+
+    /**
+     * Get a user by ID
+     * @param userID User ID to search for
+     * @return User if found, null otherwise
+     */
+    public User getUserByID(int userID) {
+        String sql = "SELECT * FROM Users WHERE userID = ?";
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, userID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapUser(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting user by ID: " + e.getMessage());
+        }
+        return null;
+    }
 
     /**
      * Get a user by username
@@ -84,111 +104,35 @@ public class UserDAO extends DBContext {
     }
 
     /**
-     * Get a user by ID
-     * @param userID User ID to search for
-     * @return User if found, null otherwise
-     */
-    public User getUserById(int userID) {
-        String sql = "SELECT * FROM Users WHERE userID = ?";
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, userID);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapUser(rs);
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("Error getting user by ID: " + e.getMessage());
-        }
-        return null;
-    }
-
-    /**
      * Create a new user
      * @param user User to create
      * @return true if successful, false otherwise
      */
     public boolean createUser(User user) {
-        String sql = "INSERT INTO Users (fullName, username, passwordHash, salt, email, role, gender, phoneNumber, isGroup, isActive, createdDate) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Users (fullName, username, passwordHash, email, role, gender, phoneNumber, isActive, createdDate) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            // Generate salt and hash password
-            byte[] salt = PasswordUtil.generateSalt();
-            byte[] passwordHash = PasswordUtil.hashPassword(user.getPassword(), salt);
-
             stmt.setString(1, user.getFullName());
             stmt.setString(2, user.getUsername());
-            stmt.setBytes(3, passwordHash);
-            stmt.setBytes(4, salt);
-            stmt.setString(5, user.getEmail());
-            stmt.setString(6, user.getRole());
-
-            // Handle gender which might be null
-            if (user.getGender() != null && !user.getGender().isEmpty()) {
-                stmt.setString(7, user.getGender());
-            } else {
-                stmt.setNull(7, java.sql.Types.NVARCHAR);
-            }
-
-            stmt.setString(8, user.getPhoneNumber());
-            stmt.setBoolean(9, user.getIsGroup());
-            stmt.setBoolean(10, user.getIsActive());
-            stmt.setTimestamp(11, new Timestamp(System.currentTimeMillis()));
-
-            // Log the SQL and parameters for debugging
-            logSqlWithParams(sql, user);
+            stmt.setString(3, user.getPassword());
+            stmt.setString(4, user.getEmail());
+            stmt.setString(5, user.getRole());
+            stmt.setString(6, user.getGender());
+            stmt.setString(7, user.getPhoneNumber());
+            stmt.setBoolean(8, user.isActive());
+            stmt.setTimestamp(9, new Timestamp(System.currentTimeMillis()));
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
             System.err.println("Error creating user: " + e.getMessage());
-            e.printStackTrace(); // Print stack trace for more details
+            e.printStackTrace();
             return false;
         }
-    }
-
-    /**
-     * Log SQL statement with parameters for debugging
-     * @param sql SQL statement
-     * @param user User object with parameters
-     */
-    private void logSqlWithParams(String sql, User user) {
-        System.out.println("=== DATABASE OPERATION DEBUG INFO ===");
-        System.out.println("Executing SQL: " + sql);
-        System.out.println("Parameters:");
-        System.out.println("  fullName: " + user.getFullName());
-        System.out.println("  username: " + user.getUsername());
-        System.out.println("  email: " + user.getEmail());
-        System.out.println("  role: " + user.getRole());
-        System.out.println("  gender: " + (user.getGender() != null ? user.getGender() : "NULL"));
-        System.out.println("  phoneNumber: " + user.getPhoneNumber());
-        System.out.println("  isGroup: " + user.getIsGroup());
-        System.out.println("  isActive: " + user.getIsActive());
-        System.out.println("  hotelID: " + user.getHotelID());
-
-        // Check for potential issues
-        if (user.getFullName() == null || user.getFullName().isEmpty()) {
-            System.out.println("WARNING: fullName is empty");
-        }
-        if (user.getUsername() == null || user.getUsername().isEmpty()) {
-            System.out.println("WARNING: username is empty");
-        }
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            System.out.println("WARNING: email is empty");
-        }
-        if (user.getRole() == null || user.getRole().isEmpty()) {
-            System.out.println("WARNING: role is empty");
-        }
-        if (user.getPassword() == null || user.getPassword().isEmpty()) {
-            System.out.println("WARNING: password is empty");
-        }
-        System.out.println("======================================");
     }
 
     /**
@@ -198,7 +142,7 @@ public class UserDAO extends DBContext {
      */
     public boolean updateUser(User user) {
         String sql = "UPDATE Users SET fullName = ?, email = ?, role = ?, gender = ?, "
-                   + "phoneNumber = ?, hotelID = ?, isGroup = ?, isActive = ?, profileImage = ? "
+                   + "phoneNumber = ?, isActive = ?, profileImage = ? "
                    + "WHERE userID = ?";
 
         try (Connection conn = getConnection();
@@ -209,11 +153,9 @@ public class UserDAO extends DBContext {
             stmt.setString(3, user.getRole());
             stmt.setString(4, user.getGender());
             stmt.setString(5, user.getPhoneNumber());
-            stmt.setInt(6, user.getHotelID());
-            stmt.setBoolean(7, user.getIsGroup());
-            stmt.setBoolean(8, user.getIsActive());
-            stmt.setString(9, user.getProfileImage());
-            stmt.setInt(10, user.getUserID());
+            stmt.setBoolean(6, user.isActive());
+            stmt.setString(7, user.getProfileImage());
+            stmt.setInt(8, user.getUserID());
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -254,18 +196,13 @@ public class UserDAO extends DBContext {
      * @return true if successful, false otherwise
      */
     public boolean changePassword(int userID, String newPassword) {
-        String sql = "UPDATE Users SET passwordHash = ?, salt = ? WHERE userID = ?";
+        String sql = "UPDATE Users SET passwordHash = ? WHERE userID = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            // Generate new salt and hash password
-            byte[] salt = PasswordUtil.generateSalt();
-            byte[] passwordHash = PasswordUtil.hashPassword(newPassword, salt);
-
-            stmt.setBytes(1, passwordHash);
-            stmt.setBytes(2, salt);
-            stmt.setInt(3, userID);
+            stmt.setString(1, newPassword);
+            stmt.setInt(2, userID);
 
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
@@ -401,6 +338,107 @@ public class UserDAO extends DBContext {
     }
 
     /**
+     * Search users by name, email, or username with role and status filters
+     * @param searchTerm Search term
+     * @param role Role to filter by (can be null for all roles)
+     * @param status Status to filter by (can be null for all statuses)
+     * @return List of matching users
+     */
+    public List<User> searchUsers(String searchTerm, String role, String status) {
+        List<User> users = new ArrayList<>();
+
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM Users WHERE (fullName LIKE ? OR email LIKE ? OR username LIKE ?)");
+        List<Object> params = new ArrayList<>();
+
+        String searchPattern = "%" + searchTerm + "%";
+        params.add(searchPattern);
+        params.add(searchPattern);
+        params.add(searchPattern);
+
+        if (role != null && !role.isEmpty()) {
+            sqlBuilder.append(" AND role = ?");
+            params.add(role);
+        }
+
+        if (status != null && !status.isEmpty()) {
+            if (status.equals("1")) {
+                sqlBuilder.append(" AND isActive = 1");
+            } else if (status.equals("0")) {
+                sqlBuilder.append(" AND isActive = 0");
+            }
+        }
+
+        sqlBuilder.append(" ORDER BY userID");
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof String) {
+                    stmt.setString(i + 1, (String) param);
+                }
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User user = mapUser(rs);
+                    users.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error searching users with filters: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
+     * Get users by role with status filter
+     * @param role Role to filter by
+     * @param status Status to filter by (can be null for all statuses)
+     * @return List of matching users
+     */
+    public List<User> getUsersByRole(String role, String status) {
+        List<User> users = new ArrayList<>();
+
+        StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM Users WHERE role = ?");
+        List<Object> params = new ArrayList<>();
+
+        params.add(role);
+
+        if (status != null && !status.isEmpty()) {
+            if (status.equals("1")) {
+                sqlBuilder.append(" AND isActive = 1");
+            } else if (status.equals("0")) {
+                sqlBuilder.append(" AND isActive = 0");
+            }
+        }
+
+        sqlBuilder.append(" ORDER BY userID");
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            for (int i = 0; i < params.size(); i++) {
+                Object param = params.get(i);
+                if (param instanceof String) {
+                    stmt.setString(i + 1, (String) param);
+                }
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    User user = mapUser(rs);
+                    users.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting users by role: " + e.getMessage());
+        }
+        return users;
+    }
+
+    /**
      * Filter users by role and/or active status
      * @param role Role to filter by (can be null for all roles)
      * @param isActive Active status to filter by (can be null for all statuses)
@@ -455,7 +493,7 @@ public class UserDAO extends DBContext {
      * @return true if password is correct, false otherwise
      */
     public boolean verifyPassword(int userID, String password) {
-        String sql = "SELECT passwordHash, salt FROM Users WHERE userID = ?";
+        String sql = "SELECT passwordHash FROM Users WHERE userID = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -464,16 +502,23 @@ public class UserDAO extends DBContext {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    byte[] storedHash = rs.getBytes("passwordHash");
-                    byte[] salt = rs.getBytes("salt");
-
-                    return PasswordUtil.verifyPassword(password, storedHash, salt);
+                    String storedPassword = rs.getString("passwordHash");
+                    return password.equals(storedPassword);
                 }
             }
         } catch (SQLException e) {
             System.err.println("Error verifying password: " + e.getMessage());
         }
         return false;
+    }
+
+    /**
+     * Get a user by ID (alias for getUserByID for backward compatibility)
+     * @param userID User ID to search for
+     * @return User if found, null otherwise
+     */
+    public User getUserById(int userID) {
+        return getUserByID(userID);
     }
 
     /**
@@ -487,23 +532,44 @@ public class UserDAO extends DBContext {
         user.setUserID(rs.getInt("userID"));
         user.setFullName(rs.getString("fullName"));
         user.setUsername(rs.getString("username"));
-        user.setPasswordHash(rs.getBytes("passwordHash"));
-        user.setSalt(rs.getBytes("salt"));
+        user.setPassword(rs.getString("passwordHash"));
         user.setEmail(rs.getString("email"));
         user.setRole(rs.getString("role"));
-        user.setGender(rs.getString("gender"));
-        user.setPhoneNumber(rs.getString("phoneNumber"));
-        user.setHotelID(rs.getInt("hotelID"));
-        user.setIsGroup(rs.getBoolean("isGroup"));
-        user.setIsActive(rs.getBoolean("isActive"));
-        user.setCreatedDate(rs.getTimestamp("createdDate"));
-        user.setLastLogin(rs.getTimestamp("lastLogin"));
 
-        // Handle profileImage column which might not exist in older database versions
+        // Handle optional fields
+        try {
+            user.setGender(rs.getString("gender"));
+        } catch (SQLException e) {
+            user.setGender(null);
+        }
+
+        try {
+            user.setPhoneNumber(rs.getString("phoneNumber"));
+        } catch (SQLException e) {
+            user.setPhoneNumber(null);
+        }
+
+        try {
+            user.setActive(rs.getBoolean("isActive"));
+        } catch (SQLException e) {
+            user.setActive(true);
+        }
+
+        try {
+            user.setCreatedDate(rs.getTimestamp("createdDate"));
+        } catch (SQLException e) {
+            user.setCreatedDate(null);
+        }
+
+        try {
+            user.setLastLogin(rs.getTimestamp("lastLogin"));
+        } catch (SQLException e) {
+            user.setLastLogin(null);
+        }
+
         try {
             user.setProfileImage(rs.getString("profileImage"));
         } catch (SQLException e) {
-            // If the column doesn't exist, just set it to null
             user.setProfileImage(null);
         }
 
