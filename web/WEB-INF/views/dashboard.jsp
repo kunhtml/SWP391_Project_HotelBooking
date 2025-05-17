@@ -29,7 +29,7 @@
                                             <i class="fas fa-user-circle fa-3x"></i>
                                         </c:when>
                                         <c:otherwise>
-                                            <img src="${pageContext.request.contextPath}/${sessionScope.user.profileImage}" alt="Profile Image" class="rounded-circle" style="width: 48px; height: 48px; object-fit: cover;">
+                                            <img src="${pageContext.request.contextPath}/storage/uploads/profile/${sessionScope.user.profileImage}" alt="Profile Image" class="rounded-circle" style="width: 48px; height: 48px; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/img/default-avatar.svg'">
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
@@ -159,7 +159,7 @@
                                                             </div>
                                                         </c:when>
                                                         <c:otherwise>
-                                                            <img src="${pageContext.request.contextPath}/${sessionScope.user.profileImage}" alt="Profile Image" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                                            <img src="${pageContext.request.contextPath}/storage/uploads/profile/${sessionScope.user.profileImage}" alt="Profile Image" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;" onerror="this.src='${pageContext.request.contextPath}/img/default-profile.svg'">
                                                         </c:otherwise>
                                                     </c:choose>
                                                 </div>
