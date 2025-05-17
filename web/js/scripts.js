@@ -26,11 +26,23 @@ function handleImages() {
       // Get image alt text or use a default
       const altText = this.alt || "Image";
 
-      // Replace with placeholder
-      this.src = `https://via.placeholder.com/${width}x${height}?text=${altText.replace(
-        /\s+/g,
-        "+"
-      )}`;
+      // Replace with local default image
+      if (
+        this.classList.contains("rounded-circle") ||
+        altText.includes("Profile")
+      ) {
+        // For profile images
+        this.src = `${window.location.pathname.substring(
+          0,
+          window.location.pathname.indexOf("/", 1)
+        )}/img/default-avatar.svg`;
+      } else {
+        // For other images
+        this.src = `${window.location.pathname.substring(
+          0,
+          window.location.pathname.indexOf("/", 1)
+        )}/img/default-image.svg`;
+      }
 
       // Add a class to style it
       this.classList.add("placeholder-img");
