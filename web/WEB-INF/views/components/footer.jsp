@@ -44,6 +44,6 @@
         </div>
     </div>
     <div class="text-center py-3 mt-4 border-top border-secondary">
-        <p class="mb-0">&copy; 2023 Hotel Booking System. All rights reserved.</p>
+        <p class="mb-0">&copy; 2025 Hotel Booking System. All rights reserved.</p>
     </div>
 </footer>
