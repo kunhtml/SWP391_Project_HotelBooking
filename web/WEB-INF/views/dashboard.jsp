@@ -13,7 +13,7 @@
 <body>
     <!-- Header -->
     <jsp:include page="components/header.jsp" />
-    
+
     <!-- Dashboard Section -->
     <section class="dashboard-section py-5">
         <div class="container">
@@ -24,7 +24,14 @@
                         <div class="card-body">
                             <div class="d-flex align-items-center mb-3">
                                 <div class="avatar me-3">
-                                    <i class="fas fa-user-circle fa-3x"></i>
+                                    <c:choose>
+                                        <c:when test="${empty sessionScope.user.profileImage}">
+                                            <i class="fas fa-user-circle fa-3x"></i>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <img src="${pageContext.request.contextPath}/${sessionScope.user.profileImage}" alt="Profile Image" class="rounded-circle" style="width: 48px; height: 48px; object-fit: cover;">
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
                                 <div>
                                     <h5 class="mb-0">${sessionScope.user.fullName}</h5>
@@ -64,7 +71,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Main Content -->
                 <div class="col-md-9">
                     <div class="tab-content">
@@ -132,7 +139,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Profile Tab -->
                         <div class="tab-pane fade" id="profile">
                             <div class="card">
@@ -140,11 +147,46 @@
                                     <h4 class="mb-0">Profile Information</h4>
                                 </div>
                                 <div class="card-body">
-                                    <form>
+                                    <!-- Profile Image Upload -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-12">
+                                            <div class="d-flex align-items-center mb-3">
+                                                <div class="me-4">
+                                                    <c:choose>
+                                                        <c:when test="${empty sessionScope.user.profileImage}">
+                                                            <div class="profile-image-placeholder">
+                                                                <i class="fas fa-user-circle fa-5x"></i>
+                                                            </div>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <img src="${pageContext.request.contextPath}/${sessionScope.user.profileImage}" alt="Profile Image" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </div>
+                                                <div>
+                                                    <h5 class="mb-1">Profile Picture</h5>
+                                                    <p class="text-muted small mb-3">Upload a new profile picture. JPG, JPEG, PNG or GIF (max. 10MB)</p>
+                                                    <form action="${pageContext.request.contextPath}/upload" method="post" enctype="multipart/form-data">
+                                                        <input type="hidden" name="uploadType" value="profile">
+                                                        <div class="input-group">
+                                                            <input type="file" class="form-control form-control-sm" id="profileImage" name="file" accept="image/*">
+                                                            <button class="btn btn-primary btn-sm" type="submit">Upload</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <hr class="mb-4">
+
+                                    <!-- Profile Information Form -->
+                                    <form action="${pageContext.request.contextPath}/profile" method="post">
+                                        <input type="hidden" name="action" value="updateProfile">
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <label for="fullName" class="form-label">Full Name</label>
-                                                <input type="text" class="form-control" id="fullName" value="${sessionScope.user.fullName}">
+                                                <input type="text" class="form-control" id="fullName" name="fullName" value="${sessionScope.user.fullName}" required>
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="email" class="form-label">Email</label>
@@ -154,14 +196,15 @@
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <label for="phoneNumber" class="form-label">Phone Number</label>
-                                                <input type="tel" class="form-control" id="phoneNumber" value="${sessionScope.user.phoneNumber}">
+                                                <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" value="${sessionScope.user.phoneNumber}">
                                             </div>
                                             <div class="col-md-6">
                                                 <label for="gender" class="form-label">Gender</label>
-                                                <select class="form-select" id="gender">
-                                                    <option value="male" ${sessionScope.user.gender == 'male' ? 'selected' : ''}>Male</option>
-                                                    <option value="female" ${sessionScope.user.gender == 'female' ? 'selected' : ''}>Female</option>
-                                                    <option value="other" ${sessionScope.user.gender == 'other' ? 'selected' : ''}>Other</option>
+                                                <select class="form-select" id="gender" name="gender">
+                                                    <option value="" ${empty sessionScope.user.gender ? 'selected' : ''}>Select Gender</option>
+                                                    <option value="Male" ${sessionScope.user.gender == 'Male' ? 'selected' : ''}>Male</option>
+                                                    <option value="Female" ${sessionScope.user.gender == 'Female' ? 'selected' : ''}>Female</option>
+                                                    <option value="Other" ${sessionScope.user.gender == 'Other' ? 'selected' : ''}>Other</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -170,7 +213,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Settings Tab -->
                         <div class="tab-pane fade" id="settings">
                             <div class="card">
@@ -194,9 +237,9 @@
                                         </div>
                                         <button type="submit" class="btn btn-primary">Change Password</button>
                                     </form>
-                                    
+
                                     <hr class="my-4">
-                                    
+
                                     <h5>Notification Preferences</h5>
                                     <form>
                                         <div class="form-check mb-2">
@@ -222,7 +265,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <!-- Admin Panel Tab -->
                         <c:if test="${sessionScope.user.role == 'admin'}">
                             <div class="tab-pane fade" id="admin">
@@ -257,7 +300,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="mt-4">
                                             <h5>Quick Actions</h5>
                                             <div class="d-flex flex-wrap gap-2">
@@ -276,10 +319,10 @@
             </div>
         </div>
     </section>
-    
+
     <!-- Footer -->
     <jsp:include page="components/footer.jsp" />
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/scripts.js"></script>
 </body>
