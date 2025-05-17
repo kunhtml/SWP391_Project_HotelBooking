@@ -42,20 +42,20 @@ public class FileUploadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Check if user is logged in
         User user = AuthUtil.getLoggedInUser(request);
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
-        
+
         // Get the upload type
         String uploadType = request.getParameter("uploadType");
         if (uploadType == null || uploadType.isEmpty()) {
             uploadType = "profile"; // Default to profile image upload
         }
-        
+
         try {
             // Get the file part from the request
             Part filePart = request.getPart("file");
@@ -64,7 +64,7 @@ public class FileUploadServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/profile");
                 return;
             }
-            
+
             // Get the file name
             String fileName = getSubmittedFileName(filePart);
             if (fileName == null || fileName.isEmpty()) {
@@ -72,65 +72,93 @@ public class FileUploadServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/profile");
                 return;
             }
-            
+
             // Validate file type
             if (!isValidImageFile(fileName)) {
                 request.getSession().setAttribute("errorMessage", "Invalid file type. Only JPG, JPEG, PNG, and GIF files are allowed.");
                 response.sendRedirect(request.getContextPath() + "/profile");
                 return;
             }
-            
+
             // Create a unique file name to prevent overwriting
             String fileExtension = fileName.substring(fileName.lastIndexOf("."));
             String uniqueFileName = UUID.randomUUID().toString() + fileExtension;
-            
-            // Create the upload directory if it doesn't exist
-            String applicationPath = request.getServletContext().getRealPath("");
-            String uploadPath = applicationPath + File.separator + UPLOAD_DIRECTORY;
+
+            // Get the application's real path
+            String webPath = request.getServletContext().getRealPath("");
+
+            // Go up one level from the build directory to get the project root
+            File buildDir = new File(webPath);
+            File projectDir = buildDir.getParentFile().getParentFile();
+            String projectRoot = projectDir.getAbsolutePath();
+
+            // Create storage directory path (outside of build)
+            String storageDir = projectRoot + File.separator + "storage";
+            String uploadPath = storageDir + File.separator + UPLOAD_DIRECTORY;
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();
             }
-            
+
             // Create a subdirectory for the upload type
             String typePath = uploadPath + File.separator + uploadType;
             File typeDir = new File(typePath);
             if (!typeDir.exists()) {
                 typeDir.mkdirs();
             }
-            
-            // Save the file
+
+            // Save the file to permanent storage
             Path filePath = Paths.get(typePath + File.separator + uniqueFileName);
             try (InputStream input = filePart.getInputStream()) {
                 Files.copy(input, filePath, StandardCopyOption.REPLACE_EXISTING);
             }
-            
+
+            // Also save a copy to the web directory for immediate access
+            String webUploadPath = webPath + File.separator + UPLOAD_DIRECTORY + File.separator + uploadType;
+            File webUploadDir = new File(webUploadPath);
+            if (!webUploadDir.exists()) {
+                webUploadDir.mkdirs();
+            }
+            Path webFilePath = Paths.get(webUploadPath + File.separator + uniqueFileName);
+            try (InputStream input = filePart.getInputStream()) {
+                Files.copy(input, webFilePath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                System.out.println("Warning: Could not copy file to web directory: " + e.getMessage());
+            }
+
+            // Log success message
+            System.out.println("File uploaded successfully: " + uniqueFileName);
+
             // Update the user's profile image path in the database
             if ("profile".equals(uploadType)) {
-                String relativePath = UPLOAD_DIRECTORY + "/" + uploadType + "/" + uniqueFileName;
-                user.setProfileImage(relativePath);
-                
+                // Just store the filename directly for simplicity
+                user.setProfileImage(uniqueFileName);
+
                 UserDAO userDAO = new UserDAO();
                 boolean success = userDAO.updateUser(user);
-                
+
                 if (success) {
                     // Update the user in the session
                     request.getSession().setAttribute("user", user);
                     request.getSession().setAttribute("successMessage", "Profile image updated successfully");
+
+                    // Log success message
+                    System.out.println("Profile image updated successfully: " + uniqueFileName);
                 } else {
                     request.getSession().setAttribute("errorMessage", "Failed to update profile image");
+                    System.out.println("Failed to update profile image in database");
                 }
             }
-            
+
             // Redirect back to the profile page
             response.sendRedirect(request.getContextPath() + "/profile");
-            
+
         } catch (Exception e) {
             request.getSession().setAttribute("errorMessage", "Error uploading file: " + e.getMessage());
             response.sendRedirect(request.getContextPath() + "/profile");
         }
     }
-    
+
     /**
      * Extracts file name from the Content-Disposition header of the part
      * @param part The part containing the file
@@ -146,7 +174,7 @@ public class FileUploadServlet extends HttpServlet {
         }
         return null;
     }
-    
+
     /**
      * Validates if the file is an image file
      * @param fileName The file name to validate
@@ -154,9 +182,9 @@ public class FileUploadServlet extends HttpServlet {
      */
     private boolean isValidImageFile(String fileName) {
         String lowerCaseFileName = fileName.toLowerCase();
-        return lowerCaseFileName.endsWith(".jpg") || 
-               lowerCaseFileName.endsWith(".jpeg") || 
-               lowerCaseFileName.endsWith(".png") || 
+        return lowerCaseFileName.endsWith(".jpg") ||
+               lowerCaseFileName.endsWith(".jpeg") ||
+               lowerCaseFileName.endsWith(".png") ||
                lowerCaseFileName.endsWith(".gif");
     }
 }
