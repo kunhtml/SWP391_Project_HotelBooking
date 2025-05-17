@@ -47,12 +47,11 @@ pageEncoding="UTF-8"%>
         <h5 class="text-uppercase mb-4">Contact Us</h5>
         <ul class="list-unstyled">
           <li class="mb-2">
-            <i class="fas fa-map-marker-alt me-2"></i>123 Hotel Street, City,
-            Country
+            <i class="fas fa-map-marker-alt me-2"></i>Khu Công Nghệ Cao Hòa Lạc, km 29, Đại lộ Thăng Long, Hà Nội
           </li>
           <li class="mb-2"><i class="fas fa-phone me-2"></i>+1 234 567 890</li>
           <li class="mb-2">
-            <i class="fas fa-envelope me-2"></i>info@hotelbooking.com
+            <i class="fas fa-envelope me-2"></i>info@luxuryhotel.com
           </li>
         </ul>
       </div>
