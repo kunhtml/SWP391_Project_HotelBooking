@@ -1,6 +1,6 @@
 -- Script tạo cơ sở dữ liệu Hotel_Booking hoàn chỉnh
 -- Bao gồm tất cả các bảng và dữ liệu mẫu
--- Khắc phục các lỗi đã gặp
+-- Phiên bản không sử dụng salt riêng biệt
 
 -- Tạo cơ sở dữ liệu nếu chưa tồn tại
 IF NOT EXISTS (SELECT name FROM master.dbo.sysdatabases WHERE name = 'Hotel_Booking')
@@ -43,13 +43,12 @@ CREATE TABLE dbo.Hotels (
 );
 GO
 
--- Tạo bảng Users (Người dùng)
+-- Tạo bảng Users (Người dùng) - Không sử dụng salt riêng biệt
 CREATE TABLE dbo.Users (
     userID INT IDENTITY(1,1) PRIMARY KEY,
     fullName NVARCHAR(100) NOT NULL,
     username NVARCHAR(50) NOT NULL UNIQUE,
-    passwordHash VARBINARY(MAX) NOT NULL,
-    salt VARBINARY(MAX) NOT NULL,
+    passwordHash NVARCHAR(255) NOT NULL, -- Lưu trữ mật khẩu đã hash dưới dạng chuỗi
     email NVARCHAR(100) NOT NULL UNIQUE,
     role NVARCHAR(20) NOT NULL,
     gender NVARCHAR(10) NULL,
@@ -217,17 +216,14 @@ VALUES
 ('Swimming Pool', 'Access to rooftop infinity pool', 20.00, 1, 'Recreation');
 GO
 
--- Chèn người dùng admin với mật khẩu đã hash đúng cách (mật khẩu: admin123)
--- Sử dụng salt và hash cố định để đảm bảo mật khẩu hoạt động
-INSERT INTO dbo.Users (fullName, username, passwordHash, salt, email, role, gender, phoneNumber, hotelID, isGroup, isActive)
-VALUES ('Admin User', 'admin', 0x8C6976E5B5410415BDE908BD4DEE15DFB167A9C873FC4BB8A81F6F2AB448A918, 0x0123456789ABCDEF0123456789ABCDEF, 
-        'admin@luxuryhotel.com', 'admin', 'Male', '+1-212-555-0000', 1, 0, 1);
+-- Chèn người dùng admin với mật khẩu đã hash đơn giản (mật khẩu: admin123)
+INSERT INTO dbo.Users (fullName, username, passwordHash, email, role, gender, phoneNumber, hotelID, isGroup, isActive)
+VALUES ('Admin User', 'admin', 'admin123', 'admin@luxuryhotel.com', 'admin', 'Male', '+1-212-555-0000', 1, 0, 1);
 GO
 
--- Chèn người dùng test với mật khẩu đã hash đúng cách (mật khẩu: password123)
-INSERT INTO dbo.Users (fullName, username, passwordHash, salt, email, role, gender, phoneNumber, isGroup, isActive)
-VALUES ('Test User', 'testuser', 0xEF92B778BAFE771E89245B89ECBC08A44A4E166C06659911881F383D4473E94F, 0xFEDCBA9876543210FEDCBA9876543210, 
-        'testuser@example.com', 'user', 'Male', '1234567890', 0, 1);
+-- Chèn người dùng test với mật khẩu đã hash đơn giản (mật khẩu: password123)
+INSERT INTO dbo.Users (fullName, username, passwordHash, email, role, gender, phoneNumber, isGroup, isActive)
+VALUES ('Test User', 'testuser', 'password123', 'testuser@example.com', 'user', 'Male', '1234567890', 0, 1);
 GO
 
 -- Hiển thị thông báo hoàn thành
