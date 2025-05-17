@@ -4,25 +4,21 @@ import java.sql.Timestamp;
 
 /**
  * User model class
- * Represents a user in the system
+ * Simple implementation without complex password handling
  */
 public class User {
     private int userID;
     private String fullName;
     private String username;
-    private byte[] passwordHash;
-    private byte[] salt;
-    private String password; // Transient field, not stored in database
+    private String password;
     private String email;
     private String role;
     private String gender;
     private String phoneNumber;
-    private int hotelID;
-    private boolean isGroup;
     private boolean isActive;
     private Timestamp createdDate;
     private Timestamp lastLogin;
-    private String profileImage; // Path to the profile image
+    private String profileImage;
 
     /**
      * Default constructor
@@ -34,7 +30,7 @@ public class User {
      * Constructor with essential fields
      * @param fullName User's full name
      * @param username Username
-     * @param password Plain text password (will be hashed before storage)
+     * @param password Password
      * @param email Email address
      * @param role User role
      */
@@ -45,7 +41,6 @@ public class User {
         this.email = email;
         this.role = role;
         this.isActive = true;
-        this.isGroup = false;
     }
 
     // Getters and Setters
@@ -71,22 +66,6 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public byte[] getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(byte[] passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
-    public byte[] getSalt() {
-        return salt;
-    }
-
-    public void setSalt(byte[] salt) {
-        this.salt = salt;
     }
 
     public String getPassword() {
@@ -129,28 +108,32 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
-    public int getHotelID() {
-        return hotelID;
+    public boolean isActive() {
+        return isActive;
     }
 
-    public void setHotelID(int hotelID) {
-        this.hotelID = hotelID;
+    public void setActive(boolean active) {
+        isActive = active;
     }
+
+    // For backward compatibility
+    public boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(boolean active) {
+        isActive = active;
+    }
+
+    // For backward compatibility
+    private boolean isGroup;
 
     public boolean getIsGroup() {
         return isGroup;
     }
 
-    public void setIsGroup(boolean isGroup) {
-        this.isGroup = isGroup;
-    }
-
-    public boolean getIsActive() {
-        return isActive;
-    }
-
-    public void setIsActive(boolean isActive) {
-        this.isActive = isActive;
+    public void setIsGroup(boolean group) {
+        isGroup = group;
     }
 
     public Timestamp getCreatedDate() {
@@ -175,5 +158,16 @@ public class User {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "userID=" + userID +
+                ", fullName='" + fullName + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", role='" + role + '\'' +
+                '}';
     }
 }
