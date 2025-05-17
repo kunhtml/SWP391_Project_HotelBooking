@@ -87,13 +87,15 @@ public class LoginServlet extends HttpServlet {
             // Login successful
             AuthUtil.storeUserInSession(request, user);
 
+
+
             // Handle remember-me functionality
             if (remember != null) {
                 // Store username in a cookie that lasts for 30 days
                 CookieUtil.addCookie(response, "remember_username", username, 30 * 24 * 60 * 60);
             } else {
                 // Delete the cookie if "remember me" is not checked
-                CookieUtil.deleteCookie(response, "remember_username");
+                CookieUtil.deleteCookie(request, response, "remember_username");
             }
 
             // Update last login time

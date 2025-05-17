@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="200" height="60" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .logo-text { font-family: Arial, sans-serif; font-weight: bold; }
+    .primary { fill: #0066cc; }
+    .secondary { fill: #333333; }
+  </style>
+  
+  <!-- Hotel Icon -->
+  <rect x="10" y="15" width="40" height="30" rx="2" class="primary" />
+  <rect x="20" y="25" width="8" height="8" fill="white" />
+  <rect x="32" y="25" width="8" height="8" fill="white" />
+  <rect x="20" y="37" width="20" height="8" fill="white" />
+  
+  <!-- Text -->
+  <text x="60" y="30" class="logo-text primary" font-size="18">HOTEL</text>
+  <text x="60" y="48" class="logo-text secondary" font-size="16">BOOKING</text>
+</svg>

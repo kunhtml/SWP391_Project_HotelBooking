@@ -25,19 +25,19 @@ public class LogoutServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // Get the session
         HttpSession session = request.getSession(false);
-        
+
         // Invalidate the session if it exists
         if (session != null) {
             session.invalidate();
         }
-        
+
         // Delete the remember-me cookie (if you want to)
         // Comment this out if you want the remember-me functionality to persist after logout
-        CookieUtil.deleteCookie(response, "remember_username");
-        
+        CookieUtil.deleteCookie(request, response, "remember_username");
+
         // Redirect to the home page
         response.sendRedirect(request.getContextPath() + "/");
     }

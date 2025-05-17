@@ -1,0 +1,280 @@
+/* Global Styles */
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 1200px;
+}
+
+/* Header Styles */
+.navbar {
+  padding: 15px 0;
+}
+
+.navbar-brand {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.logo-text {
+  font-family: "Playfair Display", serif;
+  font-weight: 700;
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  background: linear-gradient(135deg, #d4af37 0%, #ffc107 50%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 5px;
+}
+
+.navbar-brand:hover {
+  text-decoration: none;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  overflow: hidden;
+  padding: 80px 0;
+}
+
+.hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.hero-section .container {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+.hero-section p {
+  color: #fff;
+  font-size: 1.1rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+  margin-bottom: 20px;
+}
+
+.search-form-container {
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Featured Rooms */
+.featured-rooms {
+  padding: 60px 0;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-title {
+  font-weight: 600;
+}
+
+.price {
+  color: #0066cc;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* Services Section */
+.services {
+  background-color: #f8f9fa;
+}
+
+.service-item {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  height: 100%;
+}
+
+.service-item i {
+  color: #0066cc;
+}
+
+/* Room Cards */
+.room-card {
+  margin-bottom: 30px;
+}
+
+.room-features {
+  margin-bottom: 15px;
+}
+
+/* Login & Register Forms */
+.login-section,
+.register-section {
+  background-color: #f8f9fa;
+}
+
+/* Dashboard */
+.dashboard-section {
+  background-color: #f8f9fa;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  background-color: #e9ecef;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+}
+
+.nav-link.active {
+  background-color: #0066cc;
+  color: #fff !important;
+}
+
+/* About Page */
+.mission-item {
+  text-align: center;
+  padding: 20px;
+}
+
+.team-card {
+  text-align: center;
+}
+
+.social-icons a {
+  font-size: 1.2rem;
+  margin: 0 5px;
+}
+
+/* Footer */
+footer {
+  background-color: #343a40;
+  color: #fff;
+}
+
+footer a {
+  color: #fff;
+}
+
+footer a:hover {
+  color: #f8f9fa;
+}
+
+/* Image Handling */
+.img-placeholder {
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-weight: 600;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Consistent image sizing */
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.room-card .rounded-start {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.img-fluid.rounded {
+  max-height: 400px;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* Team member images */
+.team-card .card-img-top {
+  height: 250px;
+  object-fit: cover;
+}
+
+/* Testimonial images */
+.rounded-circle {
+  object-fit: cover;
+  width: 50px;
+  height: 50px;
+}
+
+/* Service card images */
+.service-card .card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Hero image */
+.hero-section .img-fluid {
+  height: 400px;
+  object-fit: cover;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 50px 0;
+    background-position: center;
+  }
+
+  .hero-section h1 {
+    font-size: 1.8rem;
+  }
+
+  .hero-section p {
+    font-size: 1rem;
+  }
+
+  .search-form-container {
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+}
