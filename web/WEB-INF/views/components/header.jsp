@@ -40,14 +40,21 @@
                                     <i class="fas fa-user-circle me-1"></i> ${sessionScope.user.fullName}
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li><a class="dropdown-item" href="dashboard"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
-                                    <li><a class="dropdown-item" href="dashboard#profile"><i class="fas fa-user me-2"></i>Profile</a></li>
-                                    <li><a class="dropdown-item" href="dashboard#bookings"><i class="fas fa-calendar-alt me-2"></i>My Bookings</a></li>
-                                    <c:if test="${sessionScope.user.role == 'admin'}">
-                                        <li><a class="dropdown-item" href="dashboard#admin"><i class="fas fa-user-shield me-2"></i>Admin Panel</a></li>
-                                    </c:if>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                    <c:choose>
+                                        <c:when test="${sessionScope.user.role == 'admin'}">
+                                            <li><a class="dropdown-item" href="admin/dashboard"><i class="fas fa-user-shield me-2"></i>Admin Panel</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <li><a class="dropdown-item" href="profile"><i class="fas fa-user me-2"></i>My Profile</a></li>
+                                            <c:if test="${sessionScope.user.role == 'admin'}">
+                                                <li><a class="dropdown-item" href="admin/dashboard"><i class="fas fa-user-shield me-2"></i>Admin Panel</a></li>
+                                            </c:if>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </ul>
                             </div>
                         </c:otherwise>
