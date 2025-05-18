@@ -207,6 +207,62 @@ public class UserManagementController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard#users");
                 break;
 
+            case "changePassword":
+                try {
+                    // Get user ID
+                    int userId = Integer.parseInt(request.getParameter("userId"));
+
+                    // Get current password from form
+                    String currentPassword = request.getParameter("currentPassword");
+                    String newPassword = request.getParameter("newPassword");
+                    String confirmPassword = request.getParameter("confirmPassword");
+
+                    // Get user from database to verify current password
+                    User userToUpdate = userDAO.getUserByID(userId);
+
+                    // Validate inputs
+                    if (userToUpdate == null) {
+                        request.getSession().setAttribute("errorMessage", "User not found.");
+                        response.sendRedirect(request.getContextPath() + "/admin/dashboard#settings");
+                        return;
+                    }
+
+                    // Validate passwords
+                    if (!newPassword.equals(confirmPassword)) {
+                        request.getSession().setAttribute("errorMessage", "New passwords do not match.");
+                        response.sendRedirect(request.getContextPath() + "/admin/dashboard#settings");
+                        return;
+                    }
+
+                    // Verify current password
+                    if (!userDAO.verifyPassword(userId, currentPassword)) {
+                        request.getSession().setAttribute("errorMessage", "Current password is incorrect.");
+                        response.sendRedirect(request.getContextPath() + "/admin/dashboard#settings");
+                        return;
+                    }
+
+                    // Change password in database
+                    success = userDAO.changePassword(userId, newPassword);
+
+                    if (success) {
+                        // Update the user in session if it's the same user
+                        if (user.getUserID() == userId) {
+                            user.setPassword(newPassword);
+                            request.getSession().setAttribute("user", user);
+                        }
+                        request.getSession().setAttribute("successMessage", "Password successfully changed.");
+                    } else {
+                        request.getSession().setAttribute("errorMessage", "Failed to change password.");
+                    }
+
+                    // Redirect back to settings page
+                    response.sendRedirect(request.getContextPath() + "/admin/dashboard#settings");
+                } catch (NumberFormatException e) {
+                    request.getSession().setAttribute("errorMessage", "Invalid user ID.");
+                    response.sendRedirect(request.getContextPath() + "/admin/dashboard#settings");
+                }
+                break;
+
             default:
                 // Unknown action, redirect back to user management page
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard#users");
