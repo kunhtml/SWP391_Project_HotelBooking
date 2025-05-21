@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.User;
 import utils.AuthUtil;
 
@@ -16,6 +18,9 @@ import utils.AuthUtil;
  */
 @WebServlet(name = "UserManagementController", urlPatterns = {"/admin/users"})
 public class UserManagementController extends HttpServlet {
+
+    // Use java.util.logging instead of SLF4J
+    private static final Logger LOGGER = Logger.getLogger(UserManagementController.class.getName());
 
     /**
      * Handles the HTTP GET request for the user management page
@@ -131,15 +136,16 @@ public class UserManagementController extends HttpServlet {
                 try {
                     // Delete user
                     int userId = Integer.parseInt(request.getParameter("userId"));
-                    boolean success = userDAO.deleteUser(userId);
+                    boolean deleteSuccess = userDAO.deleteUser(userId);
 
-                    if (success) {
+                    if (deleteSuccess) {
                         request.getSession().setAttribute("successMessage", "User successfully deleted.");
                     } else {
                         request.getSession().setAttribute("errorMessage", "Failed to delete user.");
                     }
                 } catch (NumberFormatException e) {
                     request.getSession().setAttribute("errorMessage", "Invalid user ID.");
+                    LOGGER.log(Level.WARNING, "Invalid user ID during deletion", e);
                 }
 
                 // Redirect back to user management page
@@ -155,6 +161,14 @@ public class UserManagementController extends HttpServlet {
                     User userToUpdate = userDAO.getUserByID(userId);
 
                     if (userToUpdate != null) {
+                        // Check if the user is trying to modify their own role
+                        if (user.getUserID() == userId && !userToUpdate.getRole().equals(request.getParameter("role"))) {
+                            // Prevent changing own role
+                            request.getSession().setAttribute("errorMessage", "You cannot change your own role.");
+                            response.sendRedirect(request.getContextPath() + "/admin/dashboard#users");
+                            return;
+                        }
+
                         // Update user fields
                         userToUpdate.setFullName(request.getParameter("fullName"));
                         userToUpdate.setEmail(request.getParameter("email"));
@@ -164,9 +178,9 @@ public class UserManagementController extends HttpServlet {
                         userToUpdate.setActive("1".equals(request.getParameter("isActive")));
 
                         // Update user in database
-                        boolean success = userDAO.updateUser(userToUpdate);
+                        boolean updateSuccess = userDAO.updateUser(userToUpdate);
 
-                        if (success) {
+                        if (updateSuccess) {
                             request.getSession().setAttribute("successMessage", "User successfully updated.");
                         } else {
                             request.getSession().setAttribute("errorMessage", "Failed to update user.");
@@ -176,6 +190,7 @@ public class UserManagementController extends HttpServlet {
                     }
                 } catch (NumberFormatException e) {
                     request.getSession().setAttribute("errorMessage", "Invalid user ID.");
+                    LOGGER.log(Level.WARNING, "Invalid user ID during update", e);
                 }
 
                 // Redirect back to user management page
@@ -183,24 +198,65 @@ public class UserManagementController extends HttpServlet {
                 break;
 
             case "create":
-                // Create new user
-                User newUser = new User();
-                newUser.setFullName(request.getParameter("fullName"));
-                newUser.setUsername(request.getParameter("username"));
-                newUser.setPassword(request.getParameter("password"));
-                newUser.setEmail(request.getParameter("email"));
-                newUser.setRole(request.getParameter("role"));
-                newUser.setGender(request.getParameter("gender"));
-                newUser.setPhoneNumber(request.getParameter("phoneNumber"));
-                newUser.setActive(true);
+                try {
+                    // Validate input fields
+                    String fullName = request.getParameter("fullName");
+                    String username = request.getParameter("username");
+                    String password = request.getParameter("password");
+                    String confirmPassword = request.getParameter("confirmPassword");
+                    String email = request.getParameter("email");
+                    String role = request.getParameter("role");
+                    String gender = request.getParameter("gender");
+                    String phoneNumber = request.getParameter("phoneNumber");
 
-                // Create user in database
-                boolean success = userDAO.createUser(newUser);
+                    // Validate required fields
+                    if (fullName == null || fullName.trim().isEmpty() ||
+                        username == null || username.trim().isEmpty() ||
+                        password == null || password.trim().isEmpty() ||
+                        email == null || email.trim().isEmpty() ||
+                        role == null || role.trim().isEmpty()) {
+                        request.getSession().setAttribute("errorMessage", "All required fields must be filled.");
+                        response.sendRedirect(request.getContextPath() + "/admin/dashboard#users");
+                        return;
+                    }
 
-                if (success) {
-                    request.getSession().setAttribute("successMessage", "User successfully created.");
-                } else {
-                    request.getSession().setAttribute("errorMessage", "Failed to create user.");
+                    // Validate password match
+                    if (!password.equals(confirmPassword)) {
+                        request.getSession().setAttribute("errorMessage", "Passwords do not match.");
+                        response.sendRedirect(request.getContextPath() + "/admin/dashboard#users");
+                        return;
+                    }
+
+                    // Check if username already exists
+                    if (userDAO.getUserByUsername(username) != null) {
+                        request.getSession().setAttribute("errorMessage", "Username already exists.");
+                        response.sendRedirect(request.getContextPath() + "/admin/dashboard#users");
+                        return;
+                    }
+
+                    // Create new user object
+                    User newUser = new User();
+                    newUser.setFullName(fullName);
+                    newUser.setUsername(username);
+                    newUser.setPassword(password); // Note: In a real app, hash the password
+                    newUser.setEmail(email);
+                    newUser.setRole(role);
+                    newUser.setGender(gender);
+                    newUser.setPhoneNumber(phoneNumber);
+                    newUser.setActive(true); // Default to active
+
+                    // Attempt to create user
+                    boolean createSuccess = userDAO.createUser(newUser);
+
+                    if (createSuccess) {
+                        request.getSession().setAttribute("successMessage", "User successfully created.");
+                    } else {
+                        request.getSession().setAttribute("errorMessage", "Failed to create user. Please try again.");
+                    }
+                } catch (Exception e) {
+                    // Log the exception
+                    LOGGER.log(Level.SEVERE, "Error creating user", e);
+                    request.getSession().setAttribute("errorMessage", "An unexpected error occurred: " + e.getMessage());
                 }
 
                 // Redirect back to user management page
@@ -242,9 +298,9 @@ public class UserManagementController extends HttpServlet {
                     }
 
                     // Change password in database
-                    success = userDAO.changePassword(userId, newPassword);
+                    boolean changePasswordSuccess = userDAO.changePassword(userId, newPassword);
 
-                    if (success) {
+                    if (changePasswordSuccess) {
                         // Update the user in session if it's the same user
                         if (user.getUserID() == userId) {
                             user.setPassword(newPassword);

@@ -653,11 +653,18 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                                     </div>
                                     <div class="mb-3">
                                       <label for="role${userItem.userID}" class="form-label">Role</label>
-                                      <select class="form-select" id="role${userItem.userID}" name="role" required>
-                                        <option value="admin" ${userItem.role == 'admin' ? 'selected' : ''}>Admin</option>
-                                        <option value="staff" ${userItem.role == 'staff' ? 'selected' : ''}>Staff</option>
-                                        <option value="user" ${userItem.role == 'user' ? 'selected' : ''}>User</option>
-                                      </select>
+                                      <select class="form-select" id="role${userItem.userID}" name="role" required 
+                                                        ${user.userID == userItem.userID ? 'disabled' : ''}>
+                                                        <option value="admin" ${userItem.role == 'admin' ? 'selected' : ''}>Admin</option>
+                                                        <option value="staff" ${userItem.role == 'staff' ? 'selected' : ''}>Staff</option>
+                                                        <option value="user" ${userItem.role == 'user' ? 'selected' : ''}>User</option>
+                                                      </select>
+                                                      <c:if test="${user.userID == userItem.userID}">
+                                                        <input type="hidden" name="role" value="${userItem.role}">
+                                                        <small class="text-muted">
+                                                          <i class="fas fa-lock me-1"></i>You cannot change your own role
+                                                        </small>
+                                                      </c:if>
                                     </div>
                                     <div class="mb-3">
                                       <label for="gender${userItem.userID}" class="form-label">Gender</label>
@@ -744,11 +751,12 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                       ></button>
                     </div>
                     <div class="modal-body">
-                      <form id="addUserForm">
+                      <form id="addUserForm" action="${pageContext.request.contextPath}/admin/users" method="post" onsubmit="return validateAddUserForm()">
+                        <input type="hidden" name="action" value="create">
                         <div class="row mb-3">
                           <div class="col-md-6">
                             <label for="fullName" class="form-label"
-                              >Full Name</label
+                              >Full Name <span class="text-danger">*</span></label
                             >
                             <input
                               type="text"
@@ -756,11 +764,14 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                               id="fullName"
                               name="fullName"
                               required
+                              minlength="2"
+                              maxlength="100"
                             />
+                            <div class="invalid-feedback">Please enter a valid full name (2-100 characters).</div>
                           </div>
                           <div class="col-md-6">
                             <label for="username" class="form-label"
-                              >Username</label
+                              >Username <span class="text-danger">*</span></label
                             >
                             <input
                               type="text"
@@ -768,19 +779,25 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                               id="username"
                               name="username"
                               required
+                              minlength="3"
+                              maxlength="50"
+                              pattern="[a-zA-Z0-9_]+"
                             />
+                            <div class="invalid-feedback">Please enter a valid username (3-50 characters, letters, numbers, and underscores only).</div>
                           </div>
                         </div>
                         <div class="row mb-3">
                           <div class="col-md-6">
-                            <label for="email" class="form-label">Email</label>
+                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                             <input
                               type="email"
                               class="form-control"
                               id="email"
                               name="email"
                               required
+                              maxlength="100"
                             />
+                            <div class="invalid-feedback">Please enter a valid email address.</div>
                           </div>
                           <div class="col-md-6">
                             <label for="phoneNumber" class="form-label"
@@ -791,13 +808,16 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                               class="form-control"
                               id="phoneNumber"
                               name="phoneNumber"
+                              pattern="[+]?[0-9]{10,14}"
+                              maxlength="15"
                             />
+                            <div class="invalid-feedback">Please enter a valid phone number (10-14 digits).</div>
                           </div>
                         </div>
                         <div class="row mb-3">
                           <div class="col-md-6">
                             <label for="password" class="form-label"
-                              >Password</label
+                              >Password <span class="text-danger">*</span></label
                             >
                             <input
                               type="password"
@@ -805,11 +825,14 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                               id="password"
                               name="password"
                               required
+                              minlength="8"
+                              maxlength="50"
                             />
+                            <div class="invalid-feedback">Password must be 8-50 characters long.</div>
                           </div>
                           <div class="col-md-6">
                             <label for="confirmPassword" class="form-label"
-                              >Confirm Password</label
+                              >Confirm Password <span class="text-danger">*</span></label
                             >
                             <input
                               type="password"
@@ -817,12 +840,15 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                               id="confirmPassword"
                               name="confirmPassword"
                               required
+                              minlength="8"
+                              maxlength="50"
                             />
+                            <div class="invalid-feedback">Passwords do not match.</div>
                           </div>
                         </div>
                         <div class="row mb-3">
                           <div class="col-md-6">
-                            <label for="role" class="form-label">Role</label>
+                            <label for="role" class="form-label">Role <span class="text-danger">*</span></label>
                             <select
                               class="form-select"
                               id="role"
@@ -834,6 +860,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                               <option value="user">User</option>
                               <option value="staff">Staff</option>
                             </select>
+                            <div class="invalid-feedback">Please select a role.</div>
                           </div>
                           <div class="col-md-6">
                             <label for="gender" class="form-label"
@@ -851,26 +878,117 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
                             </select>
                           </div>
                         </div>
+                        <div class="modal-footer">
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal"
+                          >
+                            Cancel
+                          </button>
+                          <button type="submit" class="btn btn-primary">
+                            Add User
+                          </button>
+                        </div>
                       </form>
-                    </div>
-                    <div class="modal-footer">
-                      <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                      >
-                        Cancel
-                      </button>
-                      <button type="button" class="btn btn-primary">
-                        Add User
-                      </button>
                     </div>
                   </div>
                 </div>
               </div>
+
+              <script>
+                function validateAddUserForm() {
+                  const form = document.getElementById('addUserForm');
+                  const password = document.getElementById('password');
+                  const confirmPassword = document.getElementById('confirmPassword');
+                  const email = document.getElementById('email');
+                  const username = document.getElementById('username');
+                  const fullName = document.getElementById('fullName');
+                  const role = document.getElementById('role');
+
+                  // Reset previous validation states
+                  form.classList.remove('was-validated');
+                  password.classList.remove('is-invalid');
+                  confirmPassword.classList.remove('is-invalid');
+                  email.classList.remove('is-invalid');
+                  username.classList.remove('is-invalid');
+                  fullName.classList.remove('is-invalid');
+                  role.classList.remove('is-invalid');
+
+                  let isValid = true;
+
+                  // Validate full name
+                  if (fullName.value.trim().length < 2 || fullName.value.trim().length > 100) {
+                    fullName.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Validate username
+                  const usernameRegex = /^[a-zA-Z0-9_]+$/;
+                  if (username.value.trim().length < 3 || 
+                      username.value.trim().length > 50 || 
+                      !usernameRegex.test(username.value.trim())) {
+                    username.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Validate email
+                  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                  if (!emailRegex.test(email.value.trim()) || email.value.trim().length > 100) {
+                    email.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Validate phone number (optional)
+                  const phoneNumber = document.getElementById('phoneNumber');
+                  const phoneRegex = /^[+]?[0-9]{10,14}$/;
+                  if (phoneNumber.value.trim() !== '' && 
+                      (!phoneRegex.test(phoneNumber.value.trim()) || phoneNumber.value.trim().length > 15)) {
+                    phoneNumber.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Validate password
+                  if (password.value.length < 8 || password.value.length > 50) {
+                    password.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Validate confirm password
+                  if (password.value !== confirmPassword.value) {
+                    confirmPassword.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Validate role
+                  if (role.value === '') {
+                    role.classList.add('is-invalid');
+                    isValid = false;
+                  }
+
+                  // Prevent form submission if validation fails
+                  if (!isValid) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }
+
+                  return isValid;
+                }
+
+                // Add event listeners for real-time validation
+                document.addEventListener('DOMContentLoaded', function() {
+                  const form = document.getElementById('addUserForm');
+                  const inputs = form.querySelectorAll('input, select');
+                  
+                  inputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                      // Remove is-invalid class when user starts typing
+                      this.classList.remove('is-invalid');
+                    });
+                  });
+                });
+              </script>
             </div>
-
-
 
             <!-- Rooms Tab -->
             <div class="tab-pane fade ${activeTab == 'rooms' ? 'show active' : ''}" id="rooms">
