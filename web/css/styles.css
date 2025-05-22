@@ -1,4 +1,4 @@
-/* Global Styles */
+/* Global Styles - Minimized as Bootstrap provides these defaults */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
@@ -46,7 +46,7 @@ a:hover {
   text-decoration: none;
 }
 
-/* Hero Section */
+/* Hero Section - Keep some custom styling for the hero overlay */
 .hero-section {
   position: relative;
   overflow: hidden;
@@ -99,6 +99,7 @@ a:hover {
   padding: 60px 0;
 }
 
+/* Card hover effect - Bootstrap doesn't have this by default */
 .card {
   border: none;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
@@ -201,19 +202,7 @@ footer a:hover {
   color: #f8f9fa;
 }
 
-/* Image Handling */
-.img-placeholder {
-  background-color: #e9ecef;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  font-weight: 600;
-  text-align: center;
-  padding: 20px;
-}
-
-/* Consistent image sizing */
+/* Image Handling - For consistent image sizing */
 .card-img-top {
   height: 200px;
   object-fit: cover;
@@ -261,20 +250,18 @@ footer a:hover {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .hero-section {
-    padding: 50px 0;
-    background-position: center;
+    padding: 40px 0;
   }
-
+  
   .hero-section h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
-
+  
   .hero-section p {
     font-size: 1rem;
   }
-
+  
   .search-form-container {
-    padding: 15px;
-    margin-bottom: 20px;
+    padding: 20px;
   }
 }
